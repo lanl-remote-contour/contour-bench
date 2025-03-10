@@ -62,6 +62,15 @@ endif ()
 
 add_executable(PipelineRunner PipelineRunner.cxx)
 target_link_libraries(PipelineRunner PRIVATE ${VTK_LIBRARIES})
-
 vtk_module_autoinit(TARGETS PipelineRunner
+        MODULES ${VTK_LIBRARIES})
+
+add_executable(DataRewriter DataRewriter.cxx)
+target_link_libraries(DataRewriter PRIVATE ${VTK_LIBRARIES})
+vtk_module_autoinit(TARGETS DataRewriter
+        MODULES ${VTK_LIBRARIES})
+
+add_executable(ContourBench ContourBench.cxx)
+target_link_libraries(ContourBench PRIVATE ${VTK_LIBRARIES})
+vtk_module_autoinit(TARGETS ContourBench
         MODULES ${VTK_LIBRARIES})
