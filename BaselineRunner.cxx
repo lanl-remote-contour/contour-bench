@@ -37,6 +37,7 @@
 #include <vtkDataArraySelection.h>
 #include <vtkFieldData.h>
 #include <vtkNew.h>
+#include <vtkOutlineFilter.h>
 #include <vtkPNGWriter.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
@@ -51,7 +52,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-void Run(const char* fileName, const char* arrayName, double value)
+void Run(const char* fileName, const char* arrayName, double contourValue)
 {
   auto t0 = std::chrono::high_resolution_clock::now();
 
@@ -69,28 +70,51 @@ void Run(const char* fileName, const char* arrayName, double value)
   r2i->SetInputConnection(reader->GetOutputPort());
   r2i->SetSamplingDimensions(150, 150, 150);
   r2i->Update();
-  // r2i->GetOutput()->GetFieldData()->AllocateArrays(0);
 
   vtkNew<vtkContourFilter> cf;
   cf->SetInputConnection(r2i->GetOutputPort());
   cf->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, arrayName);
-  cf->SetValue(0, value);
+  cf->SetValue(0, contourValue);
   cf->Update();
 
   auto t2 = std::chrono::high_resolution_clock::now();
 
-  vtkNew<vtkPolyDataMapper> mapper;
-  mapper->SetInputConnection(cf->GetOutputPort());
-  mapper->ScalarVisibilityOff();
-
-  vtkNew<vtkActor> actor;
-  actor->SetMapper(mapper);
-  actor->GetProperty()->SetColor(1, 1, 1);
-
   vtkNew<vtkRenderer> renderer;
-  renderer->SetBackground(0, 0, 0);
-  renderer->AddActor(actor);
+  renderer->SetBackground(0.321, 0.341, 0.431);
+
+  {
+    vtkNew<vtkPolyDataMapper> mapper;
+    mapper->SetInputConnection(cf->GetOutputPort());
+    mapper->ScalarVisibilityOff();
+
+    vtkNew<vtkActor> actor;
+    actor->SetMapper(mapper);
+    actor->GetProperty()->LightingOff();
+    actor->GetProperty()->SetColor(1, 0.333, 0);
+    actor->GetProperty()->SetOpacity(0.8);
+    renderer->AddActor(actor);
+  }
+
+  {
+    vtkNew<vtkImageData> image;
+    image->SetExtent(0, 149, 0, 149, 0, 149);
+    image->SetOrigin(-2300000, -500000, -1200000);
+    image->SetSpacing(30872.4, 18791.9, 16107.4);
+
+    vtkNew<vtkOutlineFilter> of;
+    of->SetInputData(image);
+
+    vtkNew<vtkPolyDataMapper> mapper;
+    mapper->SetInputConnection(of->GetOutputPort());
+    mapper->ScalarVisibilityOff();
+
+    vtkNew<vtkActor> actor;
+    actor->SetMapper(mapper);
+    actor->GetProperty()->LightingOff();
+    actor->GetProperty()->SetColor(1, 1, 1);
+    renderer->AddActor(actor);
+  }
 
   vtkNew<vtkRenderWindow> window;
   window->AddRenderer(renderer);
@@ -104,19 +128,16 @@ void Run(const char* fileName, const char* arrayName, double value)
   image->SetInputBufferTypeToRGB();
   image->Update();
 
-  auto t3 = std::chrono::high_resolution_clock::now();
-
   vtkNew<vtkPNGWriter> png;
   png->SetFileName("screenshot.png");
   png->SetInputConnection(image->GetOutputPort());
   png->Write();
 
-  auto t4 = std::chrono::high_resolution_clock::now();
+  auto t3 = std::chrono::high_resolution_clock::now();
 
-  std::cout << "Time: " << std::chrono::duration<double>(t1 - t0).count() << " "
+  std::cout << "Times: " << std::chrono::duration<double>(t1 - t0).count() << " "
             << std::chrono::duration<double>(t2 - t1).count() << " "
-            << std::chrono::duration<double>(t3 - t2).count() << " "
-            << std::chrono::duration<double>(t4 - t3).count() << " " << std::endl;
+            << std::chrono::duration<double>(t3 - t2).count() << std::endl;
 }
 
 int main(int argc, char* argv[])

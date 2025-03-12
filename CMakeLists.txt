@@ -50,7 +50,9 @@ find_package(Threads REQUIRED)
 
 find_package(VTK COMPONENTS
         CommonCore
+        CommonDataModel
         FiltersCore
+        FiltersModeling
         IOImage
         IOXML
         RenderingCore
@@ -70,7 +72,12 @@ target_link_libraries(DataRewriter PRIVATE ${VTK_LIBRARIES})
 vtk_module_autoinit(TARGETS DataRewriter
         MODULES ${VTK_LIBRARIES})
 
-add_executable(ContourBench ContourBench.cxx)
-target_link_libraries(ContourBench PRIVATE ${VTK_LIBRARIES})
-vtk_module_autoinit(TARGETS ContourBench
+add_executable(BaselineRunner BaselineRunner.cxx)
+target_link_libraries(BaselineRunner PRIVATE ${VTK_LIBRARIES})
+vtk_module_autoinit(TARGETS BaselineRunner
+        MODULES ${VTK_LIBRARIES})
+
+add_executable(Offloader Offloader.cxx)
+target_link_libraries(Offloader PRIVATE ${VTK_LIBRARIES})
+vtk_module_autoinit(TARGETS Offloader
         MODULES ${VTK_LIBRARIES})
