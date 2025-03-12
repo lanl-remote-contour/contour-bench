@@ -45,21 +45,17 @@
 
 int main(int argc, char* argv[])
 {
-  const char* arr = "v03";
   int size = 750;
   int c;
-  while ((c = getopt(argc, argv, "a:s:")) != -1)
+  while ((c = getopt(argc, argv, "s:")) != -1)
   {
     switch (c)
     {
-      case 'a':
-        arr = optarg;
-        break;
       case 's':
         size = atoi(optarg);
         break;
       default:
-        std::cerr << "Use -a to specify array name and -s to specify image size" << std::endl;
+        std::cerr << "Use -s to specify image size" << std::endl;
         exit(EXIT_FAILURE);
     }
   }
@@ -71,14 +67,16 @@ int main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
   std::cout << "vtk file: " << argv[0] << std::endl;
-  std::cout << "array: " << arr << std::endl;
+  std::cout << "array: v02,v03,tev" << std::endl;
   std::cout << "result image size: " << size << "x" << size << "x" << size << std::endl;
   vtkNew<vtkXMLMultiBlockDataReader> mbr;
   mbr->SetFileName(argv[0]);
   mbr->UpdateInformation();
   vtkDataArraySelection* sel = mbr->GetCellDataArraySelection();
   sel->DisableAllArrays();
-  sel->EnableArray(arr);
+  sel->EnableArray("v02");
+  sel->EnableArray("v03");
+  sel->EnableArray("tev");
 
   vtkNew<vtkResampleToImage> r2i;
   r2i->SetInputConnection(mbr->GetOutputPort());
