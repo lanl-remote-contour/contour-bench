@@ -91,19 +91,18 @@ int Run(const char* fileName, const char* arrayName, double contourValue, const 
 
 int main(int argc, char* argv[])
 {
-  if (argc < 2)
+  if (argc < 3)
   {
     exit(EXIT_FAILURE);
   }
-  std::ifstream input(argv[1]);
+  std::ifstream input(argv[1] /* command file */);
   std::string fileName;
   std::string arrayName;
   double contourValue;
-  std::string outputFile;
-  input >> fileName >> arrayName >> contourValue >> outputFile;
+  input >> fileName >> arrayName >> contourValue;
   if (!input.good())
   {
     exit(EXIT_FAILURE);
   }
-  return Run(fileName.c_str(), arrayName.c_str(), contourValue, outputFile.c_str());
+  return Run(fileName.c_str(), arrayName.c_str(), contourValue, argv[2] /* result file */);
 }
