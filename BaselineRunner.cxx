@@ -145,7 +145,7 @@ int main(int argc, char* argv[])
   const char* arr = "v03";
   double value = 0.5;
   int c;
-  while ((c = getopt(argc, argv, "a:c:")) != -1)
+  while ((c = getopt(argc, argv, "a:c:h")) != -1)
   {
     switch (c)
     {
@@ -155,6 +155,7 @@ int main(int argc, char* argv[])
       case 'c':
         value = atof(optarg);
         break;
+      case 'h':
       default:
         std::cerr << "Use -a to specify array name and -c to specify contour value" << std::endl;
         exit(EXIT_FAILURE);
