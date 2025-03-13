@@ -44,6 +44,7 @@
 #include <vtkWindowToImageFilter.h>
 #include <vtkXMLPolyDataReader.h>
 
+#include <chrono>
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
@@ -53,6 +54,8 @@
 void Run(const std::string& pushdown_command, const std::string& pushdown_res, const char* fileName,
   const char* arrayName, double contourValue)
 {
+  auto t0 = std::chrono::high_resolution_clock::now();
+
   {
     std::ofstream cmd;
     cmd.open(pushdown_command, std::ios::out | std::ios::binary | std::ios::trunc);
@@ -68,6 +71,8 @@ void Run(const std::string& pushdown_command, const std::string& pushdown_res, c
   vtkNew<vtkXMLPolyDataReader> reader;
   reader->SetFileName(pushdown_res.c_str());
   reader->Update();
+
+  auto t1 = std::chrono::high_resolution_clock::now();
 
   vtkNew<vtkRenderer> renderer;
   renderer->SetBackground(0.321, 0.341, 0.431);
@@ -121,12 +126,17 @@ void Run(const std::string& pushdown_command, const std::string& pushdown_res, c
   png->SetFileName("screenshot.png");
   png->SetInputConnection(image->GetOutputPort());
   png->Write();
+
+  auto t2 = std::chrono::high_resolution_clock::now();
+
+  std::cout << "Times: " << std::chrono::duration<double>(t1 - t0).count() << " "
+            << std::chrono::duration<double>(t2 - t1).count() << std::endl;
 }
 
 int main(int argc, char* argv[])
 {
-  const char* pushdown_command_dest = "/f/command";
-  const char* pushdown_res_src = "/f/result";
+  const char* pushdown_command_dest = "/fuse/command";
+  const char* pushdown_res_src = "/fuse/result";
   const char* arr = "v03";
   double value = 0.5;
   int c;
@@ -147,10 +157,9 @@ int main(int argc, char* argv[])
         pushdown_res_src = optarg;
         break;
       default:
-        std::cerr
-          << "Use -a to specify array name, -c to specify contour value, "
-             "-d to specify pushdown command destination, and -s to specify pushdown result source"
-          << std::endl;
+        std::cerr << "Use -a to specify array name, -c to specify contour value, "
+                     "-d to specify pushdown command file, and -s to specify pushdown result file"
+                  << std::endl;
         exit(EXIT_FAILURE);
     }
   }
@@ -161,6 +170,8 @@ int main(int argc, char* argv[])
     std::cerr << "Lack target vti filename" << std::endl;
     exit(EXIT_FAILURE);
   }
+  std::cout << "pushdown analysis command file: " << pushdown_command_dest << std::endl;
+  std::cout << "pushdown result file: " << pushdown_res_src << std::endl;
   std::cout << "vtk file: " << argv[0] << std::endl;
   std::cout << "contour value: " << value << std::endl;
   std::cout << "array: " << arr << std::endl;
