@@ -81,3 +81,8 @@ add_executable(Offloader Offloader.cxx)
 target_link_libraries(Offloader PRIVATE ${VTK_LIBRARIES})
 vtk_module_autoinit(TARGETS Offloader
         MODULES ${VTK_LIBRARIES})
+
+add_executable(OffloadRunner OffloadRunner.cxx)
+target_link_libraries(OffloadRunner PRIVATE ${VTK_LIBRARIES})
+vtk_module_autoinit(TARGETS OffloadRunner
+        MODULES ${VTK_LIBRARIES})
