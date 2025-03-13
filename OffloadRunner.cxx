@@ -140,7 +140,7 @@ int main(int argc, char* argv[])
   const char* arr = "v03";
   double value = 0.5;
   int c;
-  while ((c = getopt(argc, argv, "a:c:d:s:")) != -1)
+  while ((c = getopt(argc, argv, "a:c:d:s:h")) != -1)
   {
     switch (c)
     {
@@ -156,6 +156,7 @@ int main(int argc, char* argv[])
       case 's':
         pushdown_res_src = optarg;
         break;
+      case 'h':
       default:
         std::cerr << "Use -a to specify array name, -c to specify contour value, "
                      "-d to specify pushdown command file, and -s to specify pushdown result file"
