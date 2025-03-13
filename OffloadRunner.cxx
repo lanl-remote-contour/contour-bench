@@ -51,14 +51,14 @@
 #include <stdlib.h>
 #include <string>
 
-void Run(const std::string& pushdown_command, const std::string& pushdown_res, const char* fileName,
+void Run(const char* pushdown_command_dest, const char* pushdown_res_src, const char* fileName,
   const char* arrayName, double contourValue)
 {
   auto t0 = std::chrono::high_resolution_clock::now();
 
   {
     std::ofstream cmd;
-    cmd.open(pushdown_command, std::ios::out | std::ios::binary | std::ios::trunc);
+    cmd.open(pushdown_command_dest, std::ios::out | std::ios::binary | std::ios::trunc);
     cmd << fileName << " " << arrayName << " " << contourValue << std::endl;
     cmd.close();
     if (!cmd.good())
@@ -69,7 +69,7 @@ void Run(const std::string& pushdown_command, const std::string& pushdown_res, c
   }
 
   vtkNew<vtkXMLPolyDataReader> reader;
-  reader->SetFileName(pushdown_res.c_str());
+  reader->SetFileName(pushdown_res_src);
   reader->Update();
 
   auto t1 = std::chrono::high_resolution_clock::now();
