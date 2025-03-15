@@ -37,6 +37,7 @@
 #include <vtkDataArraySelection.h>
 #include <vtkFieldData.h>
 #include <vtkImageData.h>
+#include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkResampleToImage.h>
 #include <vtkXMLImageDataReader.h>
@@ -60,7 +61,7 @@ int Run(const char* fileName, const char* arrayName, double contourValue, const 
 
   vtkNew<vtkResampleToImage> r2i;
   r2i->SetInputConnection(reader->GetOutputPort());
-  r2i->SetSamplingDimensions(150, 150, 150);
+  r2i->SetSamplingDimensions(250, 250, 250);
   r2i->Update();
   r2i->GetOutput()
     ->GetCellData() // Remove all cell data
