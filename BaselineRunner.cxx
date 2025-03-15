@@ -33,12 +33,15 @@
  */
 
 #include <vtkActor.h>
+#include <vtkCellData.h>
 #include <vtkContourFilter.h>
 #include <vtkDataArraySelection.h>
 #include <vtkFieldData.h>
+#include <vtkImageData.h>
 #include <vtkNew.h>
 #include <vtkOutlineFilter.h>
 #include <vtkPNGWriter.h>
+#include <vtkPointData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkRenderWindow.h>
@@ -63,16 +66,28 @@ void Run(const char* fileName, const char* arrayName, double contourValue)
   das->DisableAllArrays();
   das->EnableArray(arrayName);
   reader->Update();
+  reader->GetOutput()
+    ->GetFieldData() // Remove all field data
+    ->AllocateArrays(0);
 
   auto t1 = std::chrono::high_resolution_clock::now();
 
   vtkNew<vtkResampleToImage> r2i;
   r2i->SetInputConnection(reader->GetOutputPort());
-  r2i->SetSamplingDimensions(150, 150, 150);
+  r2i->SetSamplingDimensions(250, 250, 250);
   r2i->Update();
+  r2i->GetOutput()
+    ->GetCellData() // Remove all cell data
+    ->AllocateArrays(0);
+  r2i->GetOutput()
+    ->GetPointData() // Remove vtkGhostType and vtkValidPointMask arrays
+    ->RemoveArray("vtkValidPointMask");
+  r2i->GetOutput()->GetPointData()->RemoveArray("vtkGhostType");
 
   vtkNew<vtkContourFilter> cf;
   cf->SetInputConnection(r2i->GetOutputPort());
+  cf->ComputeScalarsOff(); // No scalars or normals please
+  cf->ComputeNormalsOff();
   cf->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, arrayName);
   cf->SetValue(0, contourValue);
