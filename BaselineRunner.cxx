@@ -51,11 +51,12 @@
 #include <vtkXMLImageDataReader.h>
 
 #include <chrono>
+#include <filesystem>
 #include <getopt.h>
 #include <iostream>
 #include <stdlib.h>
 
-void Run(const char* fileName, const char* arrayName, double contourValue)
+void Run(const char* fileName, const char* arrayName, double contourValue, const char* outputPng)
 {
   auto t0 = std::chrono::high_resolution_clock::now();
 
@@ -144,7 +145,7 @@ void Run(const char* fileName, const char* arrayName, double contourValue)
   image->Update();
 
   vtkNew<vtkPNGWriter> png;
-  png->SetFileName("screenshot.png");
+  png->SetFileName(outputPng);
   png->SetInputConnection(image->GetOutputPort());
   png->Write();
 
@@ -183,9 +184,11 @@ int main(int argc, char* argv[])
     std::cerr << "Lack target vti filename" << std::endl;
     exit(EXIT_FAILURE);
   }
+  std::string outputPng = std::filesystem::path(argv[0]).stem().string() + ".png";
   std::cout << "vtk file: " << argv[0] << std::endl;
   std::cout << "contour value: " << value << std::endl;
   std::cout << "array: " << arr << std::endl;
-  Run(argv[0], arr, value);
+  std::cout << "output png: " << outputPng << std::endl;
+  Run(argv[0], arr, value, outputPng.c_str());
   return 0;
 }
