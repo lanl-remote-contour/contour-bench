@@ -45,6 +45,7 @@
 #include <vtkXMLPolyDataReader.h>
 
 #include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
@@ -52,7 +53,7 @@
 #include <string>
 
 void Run(const char* pushdown_command_dest, const char* pushdown_res_src, const char* fileName,
-  const char* arrayName, double contourValue)
+  const char* arrayName, double contourValue, const char* outputPng)
 {
   auto t0 = std::chrono::high_resolution_clock::now();
 
@@ -123,7 +124,7 @@ void Run(const char* pushdown_command_dest, const char* pushdown_res_src, const 
   image->Update();
 
   vtkNew<vtkPNGWriter> png;
-  png->SetFileName("screenshot.png");
+  png->SetFileName(outputPng);
   png->SetInputConnection(image->GetOutputPort());
   png->Write();
 
@@ -171,11 +172,12 @@ int main(int argc, char* argv[])
     std::cerr << "Lack target vti filename" << std::endl;
     exit(EXIT_FAILURE);
   }
+  std::string outputPng = std::filesystem::path(argv[0]).stem().string() + ".png";
   std::cout << "pushdown analysis command file: " << pushdown_command_dest << std::endl;
   std::cout << "pushdown result file: " << pushdown_res_src << std::endl;
   std::cout << "vtk file: " << argv[0] << std::endl;
   std::cout << "contour value: " << value << std::endl;
   std::cout << "array: " << arr << std::endl;
-  Run(pushdown_command_dest, pushdown_res_src, argv[0], arr, value);
+  Run(pushdown_command_dest, pushdown_res_src, argv[0], arr, value, outputPng.c_str());
   return 0;
 }
