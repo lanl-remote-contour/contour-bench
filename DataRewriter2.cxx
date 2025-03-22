@@ -86,7 +86,8 @@ int main(int argc, char* argv[])
   }
   append->Update();
   vtkNew<vtkXMLUnstructuredGridWriter> writer;
-  writer->SetFileName(filename.c_str());
+  snprintf(tmp, sizeof(tmp), "%s.vtu", filename.c_str());
+  writer->SetFileName(tmp);
   writer->SetInputData(append->GetUnstructuredGridOutput());
   writer->SetCompressorTypeToZLib();
   writer->EncodeAppendedDataOff();
