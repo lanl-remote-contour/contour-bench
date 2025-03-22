@@ -72,6 +72,11 @@ target_link_libraries(DataRewriter PRIVATE ${VTK_LIBRARIES})
 vtk_module_autoinit(TARGETS DataRewriter
         MODULES ${VTK_LIBRARIES})
 
+add_executable(DataRewriter2 DataRewriter2.cxx)
+target_link_libraries(DataRewriter2 PRIVATE ${VTK_LIBRARIES})
+vtk_module_autoinit(TARGETS DataRewriter2
+        MODULES ${VTK_LIBRARIES})
+
 add_executable(BaselineRunner BaselineRunner.cxx)
 target_link_libraries(BaselineRunner PRIVATE ${VTK_LIBRARIES})
 vtk_module_autoinit(TARGETS BaselineRunner
