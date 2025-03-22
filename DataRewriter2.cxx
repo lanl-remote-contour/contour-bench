@@ -43,7 +43,7 @@
 #include <iostream>
 #include <string>
 
-int Process(vtkAppendDataSets* append, const char* path, int i)
+void Process(vtkAppendDataSets* append, const char* path, int i)
 {
   vtkNew<vtkXMLUnstructuredGridReader> reader;
   reader->SetFileName(path);
@@ -90,6 +90,7 @@ int main(int argc, char* argv[])
   writer->SetInputData(append->GetUnstructuredGridOutput());
   writer->SetCompressorTypeToZLib();
   writer->EncodeAppendedDataOff();
+  writer->Update();
   std::cout << "Done!" << std::endl;
   return 0;
 }
