@@ -86,12 +86,15 @@ int main(int argc, char* argv[])
     Process(append.Get(), path.c_str(), i);
   }
   append->Update();
+  vtkUnstructuredGrid* const grid = append->GetUnstructuredGridOutput();
+  std::cout << "Number of points: " << grid->GetNumberOfPoints();
+  std::cout << "Number of cells: " << grid->GetNumberOfCells();
   vtkNew<vtkCellDataToPointData> c2p;
-  c2p->SetInputConnection(append->GetOutputPort());
+  c2p->SetInputData(grid);
   vtkNew<vtkXMLUnstructuredGridWriter> writer;
+  writer->SetInputConnection(c2p->GetOutputPort());
   snprintf(tmp, sizeof(tmp), "%s.vtu", filename.c_str());
   writer->SetFileName(tmp);
-  writer->SetInputData(c2p->GetUnstructuredGridOutput());
   writer->SetCompressorTypeToZLib();
   writer->EncodeAppendedDataOff();
   writer->Update();
