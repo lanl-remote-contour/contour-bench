@@ -82,11 +82,6 @@ target_link_libraries(BaselineRunner PRIVATE ${VTK_LIBRARIES})
 vtk_module_autoinit(TARGETS BaselineRunner
         MODULES ${VTK_LIBRARIES})
 
-add_executable(BaselineRunner2 BaselineRunner2.cxx)
-target_link_libraries(BaselineRunner2 PRIVATE ${VTK_LIBRARIES})
-vtk_module_autoinit(TARGETS BaselineRunner2
-        MODULES ${VTK_LIBRARIES})
-
 add_executable(Offloader Offloader.cxx)
 target_link_libraries(Offloader PRIVATE ${VTK_LIBRARIES})
 vtk_module_autoinit(TARGETS Offloader

@@ -47,8 +47,10 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 #include <vtkResampleToImage.h>
+#include <vtkUnstructuredGrid.h>
 #include <vtkWindowToImageFilter.h>
 #include <vtkXMLImageDataReader.h>
+#include <vtkXMLUnstructuredGridReader.h>
 
 #include <chrono>
 #include <filesystem>
@@ -56,26 +58,13 @@
 #include <iostream>
 #include <stdlib.h>
 
-void Run(const char* fileName, const char* arrayName, double contourValue, const char* outputPng)
+void Run0(vtkAlgorithm* input, const char* arrayName, double contourValue, const char* outputPng)
 {
   auto t0 = std::chrono::high_resolution_clock::now();
 
-  vtkNew<vtkXMLImageDataReader> reader;
-  reader->SetFileName(fileName);
-  reader->UpdateInformation();
-  vtkDataArraySelection* das = reader->GetPointDataArraySelection();
-  das->DisableAllArrays();
-  das->EnableArray(arrayName);
-  reader->Update();
-  reader->GetOutput()
-    ->GetFieldData() // Remove all field data
-    ->AllocateArrays(0);
-
-  auto t1 = std::chrono::high_resolution_clock::now();
-
   vtkNew<vtkResampleToImage> r2i;
-  r2i->SetInputConnection(reader->GetOutputPort());
-  r2i->SetSamplingDimensions(250, 250, 250);
+  r2i->SetInputConnection(input->GetOutputPort());
+  r2i->SetSamplingDimensions(300, 300, 300);
   r2i->Update();
   r2i->GetOutput()
     ->GetCellData() // Remove all cell data
@@ -94,7 +83,7 @@ void Run(const char* fileName, const char* arrayName, double contourValue, const
   cf->SetValue(0, contourValue);
   cf->Update();
 
-  auto t2 = std::chrono::high_resolution_clock::now();
+  auto t1 = std::chrono::high_resolution_clock::now();
 
   vtkNew<vtkRenderer> renderer;
   renderer->SetBackground(0.321, 0.341, 0.431);
@@ -149,11 +138,62 @@ void Run(const char* fileName, const char* arrayName, double contourValue, const
   png->SetInputConnection(image->GetOutputPort());
   png->Write();
 
-  auto t3 = std::chrono::high_resolution_clock::now();
+  auto t2 = std::chrono::high_resolution_clock::now();
 
-  std::cout << "Times: " << std::chrono::duration<double>(t1 - t0).count() << " "
-            << std::chrono::duration<double>(t2 - t1).count() << " "
-            << std::chrono::duration<double>(t3 - t2).count() << std::endl;
+  std::cout << "filtering: " << std::chrono::duration<double>(t1 - t0).count() << std::endl
+            << "rendering: " << std::chrono::duration<double>(t2 - t1).count() << std::endl;
+}
+
+void Run(const char* inputVTK, const char* arrayName, double contourValue, const char* outputPng)
+{
+  char t = inputVTK[strlen(inputVTK) - 1];
+  if (t == 'i')
+  {
+    auto t0 = std::chrono::high_resolution_clock::now();
+
+    vtkNew<vtkXMLImageDataReader> reader;
+    reader->SetFileName(inputVTK);
+    reader->UpdateInformation();
+    vtkDataArraySelection* das = reader->GetPointDataArraySelection();
+    das->DisableAllArrays();
+    das->EnableArray(arrayName);
+    reader->Update();
+    reader->GetOutput()
+      ->GetFieldData() // Remove all field data
+      ->AllocateArrays(0);
+
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+    std::cout << "io: " << std::chrono::duration<double>(t1 - t0).count() << std::endl;
+
+    Run0(reader.Get(), arrayName, contourValue, outputPng);
+  }
+  else if (t == 'u')
+  {
+    auto t0 = std::chrono::high_resolution_clock::now();
+
+    vtkNew<vtkXMLUnstructuredGridReader> reader;
+    reader->SetFileName(inputVTK);
+    reader->UpdateInformation();
+    vtkDataArraySelection* das = reader->GetCellDataArraySelection();
+    das->DisableAllArrays();
+    das->EnableArray(arrayName);
+    reader->Update();
+    reader->GetOutput()
+      ->GetFieldData() // Remove all field data
+      ->AllocateArrays(0);
+
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+    std::cout << "io: " << std::chrono::duration<double>(t1 - t0).count() << std::endl;
+
+    Run0(reader.Get(), arrayName, contourValue, outputPng);
+  }
+  else
+  {
+    std::cerr << "Unknown VTK file type: " << inputVTK << std::endl;
+    exit(EXIT_FAILURE);
+  }
 }
 
 int main(int argc, char* argv[])
