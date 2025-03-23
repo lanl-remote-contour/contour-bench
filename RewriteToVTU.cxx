@@ -41,7 +41,9 @@
 #include <vtkXMLUnstructuredGridWriter.h>
 
 #include <filesystem>
+#include <getopt.h>
 #include <iostream>
+#include <stdlib.h>
 #include <string>
 
 void Process(vtkAppendDataSets* append, const char* path, int i)
@@ -68,12 +70,29 @@ void Process(vtkAppendDataSets* append, const char* path, int i)
 
 int main(int argc, char* argv[])
 {
-  if (argc < 2)
+  int gzip = 0;
+  int c;
+  while ((c = getopt(argc, argv, "z:h")) != -1)
   {
-    std::cerr << "Usage: " << argv[0] << " pv_insitu_N" << std::endl;
+    switch (c)
+    {
+      case 'z':
+        gzip = atoi(optarg);
+        break;
+      case 'h':
+      default:
+        std::cerr << "Use -z to enable/disable gzip compression" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+  }
+  argc -= optind;
+  argv += optind;
+  if (!argc)
+  {
+    std::cerr << "Lack input dir pv_insitu_N" << std::endl;
     return 1;
   }
-  std::string dir = argv[1];
+  std::string dir = argv[0];
   std::cout << "Converting " << dir << "..." << std::endl;
   std::filesystem::path filename = std::filesystem::path(dir.c_str()).filename();
   vtkNew<vtkAppendDataSets> append;
@@ -87,15 +106,22 @@ int main(int argc, char* argv[])
   }
   append->Update();
   vtkUnstructuredGrid* const grid = append->GetUnstructuredGridOutput();
-  std::cout << "Number of points: " << grid->GetNumberOfPoints();
-  std::cout << "Number of cells: " << grid->GetNumberOfCells();
+  std::cout << "Num of points: " << grid->GetNumberOfPoints() << std::endl;
+  std::cout << "Num of cells: " << grid->GetNumberOfCells() << std::endl;
   vtkNew<vtkCellDataToPointData> c2p;
   c2p->SetInputData(grid);
   vtkNew<vtkXMLUnstructuredGridWriter> writer;
   writer->SetInputConnection(c2p->GetOutputPort());
   snprintf(tmp, sizeof(tmp), "%s.vtu", filename.c_str());
   writer->SetFileName(tmp);
-  writer->SetCompressorTypeToZLib();
+  if (gzip)
+  {
+    writer->SetCompressorTypeToZLib();
+  }
+  else
+  {
+    writer->SetCompressorTypeToNone();
+  }
   writer->EncodeAppendedDataOff();
   writer->Update();
   std::cout << "Done!" << std::endl;
