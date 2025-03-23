@@ -46,10 +46,10 @@
 #include <stdlib.h>
 #include <string>
 
-void Process(vtkAppendDataSets* append, const char* path, int i)
+void Append(vtkAppendDataSets* append, const std::string& path, int i)
 {
   vtkNew<vtkXMLUnstructuredGridReader> reader;
-  reader->SetFileName(path);
+  reader->SetFileName(path.c_str());
   reader->UpdateInformation();
   vtkDataArraySelection* sel = reader->GetCellDataArraySelection();
   sel->DisableAllArrays();
@@ -93,19 +93,19 @@ int main(int argc, char* argv[])
     return 1;
   }
   std::string dir = argv[0];
-  std::cout << "Converting " << dir << "..." << std::endl;
+  std::cout << "Converting " << dir << " (gz=" << gzip << ")..." << std::endl;
   std::filesystem::path filename = std::filesystem::path(dir.c_str()).filename();
-  vtkNew<vtkAppendDataSets> append;
+  vtkNew<vtkAppendDataSets> dst;
   char tmp[100];
   for (int i = 0; i < 512; i++)
   {
     snprintf(tmp, sizeof(tmp), "/%s_0_%d.vtu", filename.c_str(), i);
     std::string path = dir + tmp;
     std::cout << "Processing " << tmp + 1 << " ..." << std::endl;
-    Process(append.Get(), path.c_str(), i);
+    Append(dst.Get(), path, i);
   }
-  append->Update();
-  vtkUnstructuredGrid* const grid = append->GetUnstructuredGridOutput();
+  dst->Update();
+  vtkUnstructuredGrid* const grid = dst->GetUnstructuredGridOutput();
   std::cout << "Num of points: " << grid->GetNumberOfPoints() << std::endl;
   std::cout << "Num of cells: " << grid->GetNumberOfCells() << std::endl;
   vtkNew<vtkCellDataToPointData> c2p;
