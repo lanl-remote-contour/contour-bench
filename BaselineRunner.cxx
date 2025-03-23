@@ -164,7 +164,7 @@ void Run(const char* inputVTK, const char* arrayName, double contourValue, const
     vtkNew<vtkXMLUnstructuredGridReader> reader;
     reader->SetFileName(inputVTK);
     reader->UpdateInformation();
-    vtkDataArraySelection* das = reader->GetCellDataArraySelection();
+    vtkDataArraySelection* das = reader->GetPointDataArraySelection();
     das->DisableAllArrays();
     das->EnableArray(arrayName);
     reader->Update();
