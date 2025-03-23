@@ -46,7 +46,7 @@
 #include <stdlib.h>
 #include <string>
 
-void Append(vtkAppendDataSets* append, const std::string& path, int i)
+void Append(vtkAppendDataSets* dst, const std::string& path, int i)
 {
   vtkNew<vtkXMLUnstructuredGridReader> reader;
   reader->SetFileName(path.c_str());
@@ -60,11 +60,11 @@ void Append(vtkAppendDataSets* append, const std::string& path, int i)
 
   if (i == 0)
   {
-    append->SetInputData(reader->GetOutput());
+    dst->SetInputData(reader->GetOutput());
   }
   else
   {
-    append->AddInputData(reader->GetOutput());
+    dst->AddInputData(reader->GetOutput());
   }
 }
 
