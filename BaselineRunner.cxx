@@ -35,7 +35,6 @@
 #include <vtkActor.h>
 #include <vtkContourFilter.h>
 #include <vtkDataArraySelection.h>
-#include <vtkFieldData.h>
 #include <vtkImageData.h>
 #include <vtkNew.h>
 #include <vtkOutlineFilter.h>
@@ -44,7 +43,6 @@
 #include <vtkProperty.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
-#include <vtkUnstructuredGrid.h>
 #include <vtkWindowToImageFilter.h>
 #include <vtkXMLImageDataReader.h>
 #include <vtkXMLUnstructuredGridReader.h>
@@ -143,9 +141,6 @@ void Run(const char* inputVTK, const char* arrayName, double contourValue, const
     das->DisableAllArrays();
     das->EnableArray(arrayName);
     reader->Update();
-    reader->GetOutput()
-      ->GetFieldData() // Remove all field data
-      ->AllocateArrays(0);
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
@@ -164,9 +159,6 @@ void Run(const char* inputVTK, const char* arrayName, double contourValue, const
     das->DisableAllArrays();
     das->EnableArray(arrayName);
     reader->Update();
-    reader->GetOutput()
-      ->GetFieldData() // Remove all field data
-      ->AllocateArrays(0);
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
