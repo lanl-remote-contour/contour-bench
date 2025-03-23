@@ -70,7 +70,7 @@ void Append(vtkAppendDataSets* append, const std::string& path, int i)
 
 int main(int argc, char* argv[])
 {
-  int gzip = 0;
+  int gzip = 1;
   int c;
   while ((c = getopt(argc, argv, "z:h")) != -1)
   {
