@@ -67,14 +67,14 @@ target_link_libraries(PipelineRunner PRIVATE ${VTK_LIBRARIES})
 vtk_module_autoinit(TARGETS PipelineRunner
         MODULES ${VTK_LIBRARIES})
 
-add_executable(DataRewriter DataRewriter.cxx)
-target_link_libraries(DataRewriter PRIVATE ${VTK_LIBRARIES})
-vtk_module_autoinit(TARGETS DataRewriter
+add_executable(RewriteToVTI RewriteToVTI.cxx)
+target_link_libraries(RewriteToVTI PRIVATE ${VTK_LIBRARIES})
+vtk_module_autoinit(TARGETS RewriteToVTI
         MODULES ${VTK_LIBRARIES})
 
-add_executable(DataRewriter2 DataRewriter2.cxx)
-target_link_libraries(DataRewriter2 PRIVATE ${VTK_LIBRARIES})
-vtk_module_autoinit(TARGETS DataRewriter2
+add_executable(RewriteToVTU RewriteToVTU.cxx)
+target_link_libraries(RewriteToVTU PRIVATE ${VTK_LIBRARIES})
+vtk_module_autoinit(TARGETS RewriteToVTU
         MODULES ${VTK_LIBRARIES})
 
 add_executable(BaselineRunner BaselineRunner.cxx)

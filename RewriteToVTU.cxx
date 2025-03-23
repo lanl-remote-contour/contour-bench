@@ -33,6 +33,7 @@
  */
 
 #include <vtkAppendDataSets.h>
+#include <vtkCellDataToPointData.h>
 #include <vtkDataArraySelection.h>
 #include <vtkNew.h>
 #include <vtkUnstructuredGrid.h>
@@ -85,10 +86,12 @@ int main(int argc, char* argv[])
     Process(append.Get(), path.c_str(), i);
   }
   append->Update();
+  vtkNew<vtkCellDataToPointData> c2p;
+  c2p->SetInputConnection(append->GetOutputPort());
   vtkNew<vtkXMLUnstructuredGridWriter> writer;
   snprintf(tmp, sizeof(tmp), "%s.vtu", filename.c_str());
   writer->SetFileName(tmp);
-  writer->SetInputData(append->GetUnstructuredGridOutput());
+  writer->SetInputData(c2p->GetUnstructuredGridOutput());
   writer->SetCompressorTypeToZLib();
   writer->EncodeAppendedDataOff();
   writer->Update();
