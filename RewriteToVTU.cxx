@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
         break;
       case 'h':
       default:
-        std::cerr << "Use -z to enable/disable gzip compression" << std::endl;
+        std::cerr << "Use -z=0/1 to disable/enable gzip compression" << std::endl;
         exit(EXIT_FAILURE);
     }
   }
