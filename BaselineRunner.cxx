@@ -73,38 +73,34 @@ void Run0(vtkAlgorithm* input, const char* arrayName, double contourValue, const
   vtkNew<vtkRenderer> renderer;
   renderer->SetBackground(0.321, 0.341, 0.431);
 
-  {
-    vtkNew<vtkPolyDataMapper> mapper;
-    mapper->SetInputConnection(cf->GetOutputPort());
-    mapper->ScalarVisibilityOff();
+  vtkNew<vtkPolyDataMapper> mp;
+  mp->SetInputConnection(cf->GetOutputPort());
+  mp->ScalarVisibilityOff();
 
-    vtkNew<vtkActor> actor;
-    actor->SetMapper(mapper);
-    actor->GetProperty()->LightingOff();
-    actor->GetProperty()->SetColor(1, 0.333, 0);
-    actor->GetProperty()->SetOpacity(0.8);
-    renderer->AddActor(actor);
-  }
+  vtkNew<vtkActor> ac;
+  ac->SetMapper(mp);
+  ac->GetProperty()->LightingOff();
+  ac->GetProperty()->SetColor(1, 0.333, 0);
+  ac->GetProperty()->SetOpacity(0.8);
+  renderer->AddActor(ac);
 
-  {
-    vtkNew<vtkImageData> image;
-    image->SetExtent(0, 149, 0, 149, 0, 149);
-    image->SetOrigin(-2300000, -500000, -1200000);
-    image->SetSpacing(30872.4, 18791.9, 16107.4);
+  vtkNew<vtkImageData> img;
+  img->SetExtent(0, 149, 0, 149, 0, 149);
+  img->SetOrigin(-2300000, -500000, -1200000);
+  img->SetSpacing(30872.4, 18791.9, 16107.4);
 
-    vtkNew<vtkOutlineFilter> of;
-    of->SetInputData(image);
+  vtkNew<vtkOutlineFilter> of;
+  of->SetInputData(img);
 
-    vtkNew<vtkPolyDataMapper> mapper;
-    mapper->SetInputConnection(of->GetOutputPort());
-    mapper->ScalarVisibilityOff();
+  vtkNew<vtkPolyDataMapper> mp0;
+  mp0->SetInputConnection(of->GetOutputPort());
+  mp0->ScalarVisibilityOff();
 
-    vtkNew<vtkActor> actor;
-    actor->SetMapper(mapper);
-    actor->GetProperty()->LightingOff();
-    actor->GetProperty()->SetColor(1, 1, 1);
-    renderer->AddActor(actor);
-  }
+  vtkNew<vtkActor> ac0;
+  ac0->SetMapper(mp0);
+  ac0->GetProperty()->LightingOff();
+  ac0->GetProperty()->SetColor(1, 1, 1);
+  renderer->AddActor(ac0);
 
   vtkNew<vtkRenderWindow> window;
   window->AddRenderer(renderer);
@@ -113,16 +109,16 @@ void Run0(vtkAlgorithm* input, const char* arrayName, double contourValue, const
 
   renderer->ResetCamera();
 
-  vtkNew<vtkWindowToImageFilter> image;
-  image->SetInput(window);
-  image->SetInputBufferTypeToRGB();
-  image->Update();
+  vtkNew<vtkWindowToImageFilter> w2i;
+  w2i->SetInput(window);
+  w2i->SetInputBufferTypeToRGB();
+  w2i->Update();
 
   auto t2 = std::chrono::high_resolution_clock::now();
 
   vtkNew<vtkPNGWriter> png;
   png->SetFileName(outputPng);
-  png->SetInputConnection(image->GetOutputPort());
+  png->SetInputConnection(w2i->GetOutputPort());
   png->Write();
 
   auto t3 = std::chrono::high_resolution_clock::now();

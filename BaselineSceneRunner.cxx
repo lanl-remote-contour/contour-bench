@@ -155,16 +155,16 @@ void Run0(vtkAlgorithm* input, const char* outputPng)
 
   renderer->ResetCamera();
 
-  vtkNew<vtkWindowToImageFilter> image;
-  image->SetInput(window);
-  image->SetInputBufferTypeToRGB();
-  image->Update();
+  vtkNew<vtkWindowToImageFilter> w2i;
+  w2i->SetInput(window);
+  w2i->SetInputBufferTypeToRGB();
+  w2i->Update();
 
   auto t2 = std::chrono::high_resolution_clock::now();
 
   vtkNew<vtkPNGWriter> png;
   png->SetFileName(outputPng);
-  png->SetInputConnection(image->GetOutputPort());
+  png->SetInputConnection(w2i->GetOutputPort());
   png->Write();
 
   auto t3 = std::chrono::high_resolution_clock::now();
