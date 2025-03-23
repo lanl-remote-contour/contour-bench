@@ -62,11 +62,6 @@ if (NOT VTK_FOUND)
     message(FATAL_ERROR "Unable to locate VTK")
 endif ()
 
-add_executable(PipelineRunner PipelineRunner.cxx)
-target_link_libraries(PipelineRunner PRIVATE ${VTK_LIBRARIES})
-vtk_module_autoinit(TARGETS PipelineRunner
-        MODULES ${VTK_LIBRARIES})
-
 add_executable(RewriteToVTI RewriteToVTI.cxx)
 target_link_libraries(RewriteToVTI PRIVATE ${VTK_LIBRARIES})
 vtk_module_autoinit(TARGETS RewriteToVTI
