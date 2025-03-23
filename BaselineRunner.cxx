@@ -74,6 +74,8 @@ void Run0(vtkAlgorithm* input, const char* arrayName, double contourValue, const
     ->RemoveArray("vtkValidPointMask");
   r2i->GetOutput()->GetPointData()->RemoveArray("vtkGhostType");
 
+  auto t1 = std::chrono::high_resolution_clock::now();
+
   vtkNew<vtkContourFilter> cf;
   cf->SetInputConnection(r2i->GetOutputPort());
   cf->ComputeScalarsOff(); // No scalars or normals please
@@ -83,7 +85,7 @@ void Run0(vtkAlgorithm* input, const char* arrayName, double contourValue, const
   cf->SetValue(0, contourValue);
   cf->Update();
 
-  auto t1 = std::chrono::high_resolution_clock::now();
+  auto t2 = std::chrono::high_resolution_clock::now();
 
   vtkNew<vtkRenderer> renderer;
   renderer->SetBackground(0.321, 0.341, 0.431);
@@ -133,15 +135,21 @@ void Run0(vtkAlgorithm* input, const char* arrayName, double contourValue, const
   image->SetInputBufferTypeToRGB();
   image->Update();
 
+  auto t3 = std::chrono::high_resolution_clock::now();
+
   vtkNew<vtkPNGWriter> png;
   png->SetFileName(outputPng);
   png->SetInputConnection(image->GetOutputPort());
   png->Write();
 
-  auto t2 = std::chrono::high_resolution_clock::now();
+  auto t4 = std::chrono::high_resolution_clock::now();
 
-  std::cout << "filtering: " << std::chrono::duration<double>(t1 - t0).count() << std::endl
-            << "rendering: " << std::chrono::duration<double>(t2 - t1).count() << std::endl;
+  std::cout << "filtering: " << std::chrono::duration<double>(t2 - t0).count() << std::endl
+            << " - resampling: " << std::chrono::duration<double>(t1 - t0).count() << std::endl
+            << " - contouring: " << std::chrono::duration<double>(t2 - t1).count() << std::endl
+            << "rendering: " << std::chrono::duration<double>(t4 - t2).count() << std::endl
+            << " - win2image: " << std::chrono::duration<double>(t3 - t2).count() << std::endl
+            << " - png: " << std::chrono::duration<double>(t4 - t3).count() << std::endl;
 }
 
 void Run(const char* inputVTK, const char* arrayName, double contourValue, const char* outputPng)
