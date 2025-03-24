@@ -114,14 +114,15 @@ int main(int argc, char* argv[])
   writer->SetInputConnection(c2p->GetOutputPort());
   snprintf(tmp, sizeof(tmp), "%s.vtu", filename.c_str());
   writer->SetFileName(tmp);
-  writer->SetHeaderTypeToUInt64();
   if (gzip)
   {
     writer->SetCompressorTypeToZLib();
+    writer->SetHeaderTypeToUInt32(); // int32 is okay
   }
   else
   {
     writer->SetCompressorTypeToNone();
+    writer->SetHeaderTypeToUInt64();
   }
   writer->EncodeAppendedDataOff();
   writer->Update();
