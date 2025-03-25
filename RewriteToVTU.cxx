@@ -33,6 +33,7 @@
  */
 
 #include <vtkAppendDataSets.h>
+#include <vtkCellData.h>
 #include <vtkCellDataToPointData.h>
 #include <vtkDataArraySelection.h>
 #include <vtkNew.h>
@@ -101,13 +102,20 @@ int main(int argc, char* argv[])
   {
     snprintf(tmp, sizeof(tmp), "/%s_0_%d.vtu", filename.c_str(), i);
     std::string path = dir + tmp;
-    std::cout << "Processing " << tmp + 1 << " ..." << std::endl;
+    std::cout << "Loading " << tmp + 1 << " ..." << std::endl;
     Append(dst.Get(), path, i);
   }
   dst->Update();
+  std::cout << "Done!" << std::endl;
   vtkUnstructuredGrid* const grid = dst->GetUnstructuredGridOutput();
   std::cout << "Num of points: " << grid->GetNumberOfPoints() << std::endl;
   std::cout << "Num of cells: " << grid->GetNumberOfCells() << std::endl;
+  std::cout << "v02: " << grid->GetCellData()->GetAbstractArray("v02")->GetActualMemorySize()
+            << std::endl;
+  std::cout << "v03: " << grid->GetCellData()->GetAbstractArray("v03")->GetActualMemorySize()
+            << std::endl;
+  std::cout << "tev: " << grid->GetCellData()->GetAbstractArray("tev")->GetActualMemorySize()
+            << std::endl;
   vtkNew<vtkCellDataToPointData> c2p;
   c2p->SetInputData(grid);
   vtkNew<vtkXMLUnstructuredGridWriter> writer;
