@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
     return 1;
   }
   std::string dir = argv[0];
-  std::cout << "Converting " << dir << " (gz=" << gzip << ")..." << std::endl;
+  std::cout << "Converting " << dir << "..." << std::endl;
   std::filesystem::path filename = std::filesystem::path(dir.c_str()).filename();
   vtkNew<vtkAppendDataSets> dst;
   char tmp[100];
@@ -105,22 +105,19 @@ int main(int argc, char* argv[])
     std::cout << "Loading " << tmp + 1 << " ..." << std::endl;
     Append(dst.Get(), path, i);
   }
+  std::cout << "Processing (gz=" << gzip << ")..." << std::endl;
   dst->Update();
-  std::cout << "Done!" << std::endl;
   vtkUnstructuredGrid* const grid = dst->GetUnstructuredGridOutput();
   std::cout << "Num of points: " << grid->GetNumberOfPoints() << std::endl;
   std::cout << "Num of cells: " << grid->GetNumberOfCells() << std::endl;
-  std::cout << "v02: " << grid->GetCellData()->GetAbstractArray("v02")->GetActualMemorySize()
-            << std::endl;
-  std::cout << "v03: " << grid->GetCellData()->GetAbstractArray("v03")->GetActualMemorySize()
-            << std::endl;
-  std::cout << "tev: " << grid->GetCellData()->GetAbstractArray("tev")->GetActualMemorySize()
-            << std::endl;
+  std::cout << "Applying filters..." << std::endl;
   vtkNew<vtkCellDataToPointData> c2p;
   c2p->SetInputData(grid);
+  c2p->Update();
+  snprintf(tmp, sizeof(tmp), "%s.vtu", filename.c_str());
+  std::cout << "Dumping data to " << tmp << "..." << std::endl;
   vtkNew<vtkXMLUnstructuredGridWriter> writer;
   writer->SetInputConnection(c2p->GetOutputPort());
-  snprintf(tmp, sizeof(tmp), "%s.vtu", filename.c_str());
   writer->SetFileName(tmp);
   if (gzip)
   {
