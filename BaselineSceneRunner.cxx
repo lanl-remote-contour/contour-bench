@@ -69,8 +69,6 @@ void Run0(vtkAlgorithm* input, const char* outputPng)
     0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "v02");
   cf1->SetValue(0, 0.8);
   cf1->Update();
-  std::cout << "v02, " << cf1->GetOutput()->GetNumberOfCells() << ", "
-            << cf1->GetOutput()->GetNumberOfPoints() << std::endl;
 
   // v03
   vtkNew<vtkContourFilter> cf2;
@@ -81,8 +79,6 @@ void Run0(vtkAlgorithm* input, const char* outputPng)
     0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "v03");
   cf2->SetValue(0, 0.5);
   cf2->Update();
-  std::cout << "v03: " << cf2->GetOutput()->GetNumberOfCells() << ", "
-            << cf2->GetOutput()->GetNumberOfPoints() << std::endl;
 
   // tev
   vtkNew<vtkContourFilter> cf3;
@@ -93,8 +89,6 @@ void Run0(vtkAlgorithm* input, const char* outputPng)
     0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "tev");
   cf3->SetValue(0, 0.1);
   cf3->Update();
-  std::cout << "tev: " << cf3->GetOutput()->GetNumberOfCells() << ", "
-            << cf3->GetOutput()->GetNumberOfPoints() << std::endl;
 
   auto t1 = std::chrono::high_resolution_clock::now();
 
@@ -176,6 +170,13 @@ void Run0(vtkAlgorithm* input, const char* outputPng)
 
   auto t3 = std::chrono::high_resolution_clock::now();
 
+  std::cout << "v02-mesh, " << cf1->GetOutput()->GetNumberOfCells() << ", "
+            << cf1->GetOutput()->GetNumberOfPoints() << std::endl;
+  std::cout << "v03-mesh, " << cf2->GetOutput()->GetNumberOfCells() << ", "
+            << cf2->GetOutput()->GetNumberOfPoints() << std::endl;
+  std::cout << "tev-mesh, " << cf3->GetOutput()->GetNumberOfCells() << ", "
+            << cf3->GetOutput()->GetNumberOfPoints() << std::endl;
+
   std::cout << "contouring: " << std::chrono::duration<double>(t1 - t0).count() << std::endl
             << "rendering: " << std::chrono::duration<double>(t3 - t1).count() << std::endl
             << " - win2image: " << std::chrono::duration<double>(t2 - t1).count() << std::endl
@@ -185,17 +186,17 @@ void Run0(vtkAlgorithm* input, const char* outputPng)
   writer->SetWriteToOutputString(true);
   writer->SetInputConnection(cf1->GetOutputPort());
   writer->Write();
-  std::cout << "v02, " << writer->GetOutputString().size() << std::endl;
-  
+  std::cout << "v02-size, " << writer->GetOutputString().size() << std::endl;
+
   writer->SetWriteToOutputString(true);
   writer->SetInputConnection(cf2->GetOutputPort());
   writer->Write();
-  std::cout << "v03, " << writer->GetOutputString().size() << std::endl;
+  std::cout << "v03-size, " << writer->GetOutputString().size() << std::endl;
 
   writer->SetWriteToOutputString(true);
   writer->SetInputConnection(cf3->GetOutputPort());
   writer->Write();
-  std::cout << "tev, " << writer->GetOutputString().size() << std::endl;
+  std::cout << "tev-size, " << writer->GetOutputString().size() << std::endl;
 }
 
 void Run(const char* inputVTK, const char* outputPng)
