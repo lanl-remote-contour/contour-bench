@@ -68,6 +68,8 @@ void Run0(vtkAlgorithm* input, const char* outputPng)
     0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "v02");
   cf1->SetValue(0, 0.8);
   cf1->Update();
+  std::cout << "v02, " << cf1->GetOutput()->GetNumberOfCells() << ", "
+            << cf1->GetOutput()->GetNumberOfPoints() << std::endl;
 
   // v03
   vtkNew<vtkContourFilter> cf2;
@@ -78,6 +80,8 @@ void Run0(vtkAlgorithm* input, const char* outputPng)
     0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "v03");
   cf2->SetValue(0, 0.5);
   cf2->Update();
+  std::cout << "v03: " << cf2->GetOutput()->GetNumberOfCells() << ", "
+            << cf2->GetOutput()->GetNumberOfPoints() << std::endl;
 
   // tev
   vtkNew<vtkContourFilter> cf3;
@@ -88,6 +92,8 @@ void Run0(vtkAlgorithm* input, const char* outputPng)
     0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "tev");
   cf3->SetValue(0, 0.1);
   cf3->Update();
+  std::cout << "tev: " << cf3->GetOutput()->GetNumberOfCells() << ", "
+            << cf3->GetOutput()->GetNumberOfPoints() << std::endl;
 
   auto t1 = std::chrono::high_resolution_clock::now();
 
