@@ -45,6 +45,7 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkWindowToImageFilter.h>
 #include <vtkXMLImageDataReader.h>
+#include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLUnstructuredGridReader.h>
 
 #include <chrono>
@@ -179,6 +180,22 @@ void Run0(vtkAlgorithm* input, const char* outputPng)
             << "rendering: " << std::chrono::duration<double>(t3 - t1).count() << std::endl
             << " - win2image: " << std::chrono::duration<double>(t2 - t1).count() << std::endl
             << " - png: " << std::chrono::duration<double>(t3 - t2).count() << std::endl;
+
+  vtkNew<vtkXMLPolyDataWriter> writer;
+  writer->SetWriteToOutputString(true);
+  writer->SetInputConnection(cf1->GetOutputPort());
+  writer->Write();
+  std::cout << "v02, " << writer->GetOutputString().size() << std::endl;
+  
+  writer->SetWriteToOutputString(true);
+  writer->SetInputConnection(cf2->GetOutputPort());
+  writer->Write();
+  std::cout << "v03, " << writer->GetOutputString().size() << std::endl;
+
+  writer->SetWriteToOutputString(true);
+  writer->SetInputConnection(cf3->GetOutputPort());
+  writer->Write();
+  std::cout << "tev, " << writer->GetOutputString().size() << std::endl;
 }
 
 void Run(const char* inputVTK, const char* outputPng)
