@@ -32,78 +32,89 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <vtkCellData.h>
 #include <vtkContourFilter.h>
-#include <vtkDataArraySelection.h>
-#include <vtkFieldData.h>
-#include <vtkImageData.h>
+#include <vtkDataObject.h>
 #include <vtkNew.h>
-#include <vtkPointData.h>
-#include <vtkResampleToImage.h>
-#include <vtkXMLImageDataReader.h>
 #include <vtkXMLPolyDataWriter.h>
+#include <vtkXMLUnstructuredGridReader.h>
 
 #include <fstream>
 #include <stdlib.h>
 
-int Run(const char* fileName, const char* arrayName, double contourValue, const char* outputFile)
+int Run(
+  const char* inputFile, const char* outputFile1, const char* outputFile2, const char* outputFile3)
 {
-  vtkNew<vtkXMLImageDataReader> reader;
-  reader->SetFileName(fileName);
-  reader->UpdateInformation();
-  vtkDataArraySelection* das = reader->GetPointDataArraySelection();
-  das->DisableAllArrays();
-  das->EnableArray(arrayName);
+  vtkNew<vtkXMLUnstructuredGridReader> reader;
+  reader->SetFileName(inputFile);
   reader->Update();
-  reader->GetOutput()
-    ->GetFieldData() // Remove all field data
-    ->AllocateArrays(0);
 
-  vtkNew<vtkResampleToImage> r2i;
-  r2i->SetInputConnection(reader->GetOutputPort());
-  r2i->SetSamplingDimensions(250, 250, 250);
-  r2i->Update();
-  r2i->GetOutput()
-    ->GetCellData() // Remove all cell data
-    ->AllocateArrays(0);
-  r2i->GetOutput()
-    ->GetPointData() // Remove vtkGhostType and vtkValidPointMask arrays
-    ->RemoveArray("vtkValidPointMask");
-  r2i->GetOutput()->GetPointData()->RemoveArray("vtkGhostType");
+  // v02
+  {
+    vtkNew<vtkContourFilter> cf1;
+    cf1->SetInputConnection(reader->GetOutputPort());
+    cf1->ComputeScalarsOff();
+    cf1->ComputeNormalsOff();
+    cf1->SetInputArrayToProcess(
+      0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "v02");
+    cf1->SetValue(0, 0.8);
 
-  vtkNew<vtkContourFilter> cf;
-  cf->SetInputConnection(r2i->GetOutputPort());
-  cf->ComputeScalarsOff(); // No scalars or normals please
-  cf->ComputeNormalsOff();
-  cf->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, arrayName);
-  cf->SetValue(0, contourValue);
-  cf->Update();
+    vtkNew<vtkXMLPolyDataWriter> w1;
+    w1->SetFileName(outputFile1);
+    w1->SetInputConnection(cf1->GetOutputPort());
+    w1->Write();
+  }
 
-  vtkNew<vtkXMLPolyDataWriter> writer;
-  writer->SetInputConnection(cf->GetOutputPort());
-  writer->SetCompressorTypeToNone(); // Turn off compression
-  writer->EncodeAppendedDataOff();
-  writer->SetFileName(outputFile);
-  writer->Update();
+  // v03
+  {
+    vtkNew<vtkContourFilter> cf2;
+    cf2->SetInputConnection(reader->GetOutputPort());
+    cf2->ComputeScalarsOff();
+    cf2->ComputeNormalsOff();
+    cf2->SetInputArrayToProcess(
+      0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "v03");
+    cf2->SetValue(0, 0.5);
+
+    vtkNew<vtkXMLPolyDataWriter> w2;
+    w2->SetFileName(outputFile2);
+    w2->SetInputConnection(cf2->GetOutputPort());
+    w2->Write();
+  }
+
+  // tev
+  {
+    vtkNew<vtkContourFilter> cf3;
+    cf3->SetInputConnection(reader->GetOutputPort());
+    cf3->ComputeScalarsOff();
+    cf3->ComputeNormalsOff();
+    cf3->SetInputArrayToProcess(
+      0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "tev");
+    cf3->SetValue(0, 0.1);
+
+    vtkNew<vtkXMLPolyDataWriter> w3;
+    w3->SetFileName(outputFile3);
+    w3->SetInputConnection(cf3->GetOutputPort());
+    w3->Write();
+  }
 
   return 0;
 }
 
+/*
+ * Usage: argc=5, argv1=command_file, argv2=result_file1, argv3=result_file2,
+ *   argv4=result_file3
+ */
 int main(int argc, char* argv[])
 {
-  if (argc < 3)
+  if (argc < 5)
   {
     exit(EXIT_FAILURE);
   }
   std::ifstream input(argv[1] /* command file */);
   std::string fileName;
-  std::string arrayName;
-  double contourValue;
-  input >> fileName >> arrayName >> contourValue;
+  input >> fileName;
   if (!input.good())
   {
     exit(EXIT_FAILURE);
   }
-  return Run(fileName.c_str(), arrayName.c_str(), contourValue, argv[2] /* result file */);
+  return Run(fileName.c_str(), argv[2], argv[3], argv[4] /* result files */);
 }

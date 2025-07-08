@@ -52,15 +52,15 @@
 #include <stdlib.h>
 #include <string>
 
-void Run(const char* pushdown_command_dest, const char* pushdown_res_src, const char* fileName,
-  const char* arrayName, double contourValue, const char* outputPng)
+void Run(const char* pushdown_command_dest, const char* result1, const char* result2,
+  const char* result3, const char* inputVtk, const char* outputPng)
 {
   auto t0 = std::chrono::high_resolution_clock::now();
 
   {
     std::ofstream cmd;
     cmd.open(pushdown_command_dest, std::ios::out | std::ios::binary | std::ios::trunc);
-    cmd << fileName << " " << arrayName << " " << contourValue << std::endl;
+    cmd << inputVtk << std::endl;
     cmd.close();
     if (!cmd.good())
     {
@@ -69,47 +69,76 @@ void Run(const char* pushdown_command_dest, const char* pushdown_res_src, const 
     }
   }
 
-  vtkNew<vtkXMLPolyDataReader> reader;
-  reader->SetFileName(pushdown_res_src);
-  reader->Update();
+  vtkNew<vtkXMLPolyDataReader> r1;
+  r1->SetFileName(result1);
+  r1->Update();
+
+  vtkNew<vtkXMLPolyDataReader> r2;
+  r2->SetFileName(result2);
+  r2->Update();
+
+  vtkNew<vtkXMLPolyDataReader> r3;
+  r3->SetFileName(result3);
+  r3->Update();
 
   auto t1 = std::chrono::high_resolution_clock::now();
 
   vtkNew<vtkRenderer> renderer;
   renderer->SetBackground(0.321, 0.341, 0.431);
 
-  {
-    vtkNew<vtkPolyDataMapper> mapper;
-    mapper->SetInputConnection(reader->GetOutputPort());
-    mapper->ScalarVisibilityOff();
+  vtkNew<vtkImageData> img;
+  img->SetExtent(0, 149, 0, 149, 0, 149);
+  img->SetOrigin(-2300000, -500000, -1200000);
+  img->SetSpacing(30872.4, 18791.9, 16107.4);
 
-    vtkNew<vtkActor> actor;
-    actor->SetMapper(mapper);
-    actor->GetProperty()->LightingOff();
-    actor->GetProperty()->SetColor(1, 0.333, 0);
-    actor->GetProperty()->SetOpacity(0.8);
-    renderer->AddActor(actor);
-  }
+  vtkNew<vtkOutlineFilter> of;
+  of->SetInputData(img);
 
-  {
-    vtkNew<vtkImageData> image;
-    image->SetExtent(0, 149, 0, 149, 0, 149);
-    image->SetOrigin(-2300000, -500000, -1200000);
-    image->SetSpacing(30872.4, 18791.9, 16107.4);
+  vtkNew<vtkPolyDataMapper> mp0;
+  mp0->SetInputConnection(of->GetOutputPort());
+  mp0->ScalarVisibilityOff();
 
-    vtkNew<vtkOutlineFilter> of;
-    of->SetInputData(image);
+  vtkNew<vtkActor> ac0;
+  ac0->SetMapper(mp0);
+  ac0->GetProperty()->LightingOff();
+  ac0->GetProperty()->SetColor(1, 1, 1);
+  renderer->AddActor(ac0);
 
-    vtkNew<vtkPolyDataMapper> mapper;
-    mapper->SetInputConnection(of->GetOutputPort());
-    mapper->ScalarVisibilityOff();
+  // v02
+  vtkNew<vtkPolyDataMapper> mp1;
+  mp1->SetInputConnection(r1->GetOutputPort());
+  mp1->ScalarVisibilityOff();
 
-    vtkNew<vtkActor> actor;
-    actor->SetMapper(mapper);
-    actor->GetProperty()->LightingOff();
-    actor->GetProperty()->SetColor(1, 1, 1);
-    renderer->AddActor(actor);
-  }
+  vtkNew<vtkActor> ac1;
+  ac1->SetMapper(mp1);
+  ac1->GetProperty()->LightingOff();
+  ac1->GetProperty()->SetColor(0.012, 0.686, 1);
+  ac1->GetProperty()->SetOpacity(0.3);
+  renderer->AddActor(ac1);
+
+  // v03
+  vtkNew<vtkPolyDataMapper> mp2;
+  mp2->SetInputConnection(r2->GetOutputPort());
+  mp2->ScalarVisibilityOff();
+
+  vtkNew<vtkActor> ac2;
+  ac2->SetMapper(mp2);
+  ac2->GetProperty()->LightingOff();
+  ac2->GetProperty()->SetColor(1, 0.333, 0);
+  ac2->GetProperty()->SetOpacity(0.8);
+  renderer->AddActor(ac2);
+
+  // tev
+  vtkNew<vtkPolyDataMapper> mp3;
+  mp3->SetInputConnection(r3->GetOutputPort());
+  mp3->ScalarVisibilityOff();
+
+  vtkNew<vtkActor> ac3;
+  ac3->SetMapper(mp3);
+  ac3->GetProperty()->LightingOff();
+  ac3->GetProperty()->SetColor(0.816, 0.816, 0);
+  ac3->GetProperty()->SetOpacity(0.15);
+  renderer->AddActor(ac3);
 
   vtkNew<vtkRenderWindow> window;
   window->AddRenderer(renderer);
@@ -118,50 +147,53 @@ void Run(const char* pushdown_command_dest, const char* pushdown_res_src, const 
 
   renderer->ResetCamera();
 
-  vtkNew<vtkWindowToImageFilter> image;
-  image->SetInput(window);
-  image->SetInputBufferTypeToRGB();
-  image->Update();
-
-  vtkNew<vtkPNGWriter> png;
-  png->SetFileName(outputPng);
-  png->SetInputConnection(image->GetOutputPort());
-  png->Write();
+  vtkNew<vtkWindowToImageFilter> w2i;
+  w2i->SetInput(window);
+  w2i->SetInputBufferTypeToRGB();
+  w2i->Update();
 
   auto t2 = std::chrono::high_resolution_clock::now();
 
-  std::cout << "Times: " << std::chrono::duration<double>(t1 - t0).count() << " "
-            << std::chrono::duration<double>(t2 - t1).count() << std::endl;
+  vtkNew<vtkPNGWriter> png;
+  png->SetFileName(outputPng);
+  png->SetInputConnection(w2i->GetOutputPort());
+  png->Write();
+
+  auto t3 = std::chrono::high_resolution_clock::now();
+
+  std::cout << "v02-mesh, " << r1->GetOutput()->GetNumberOfCells() << ", "
+            << r1->GetOutput()->GetNumberOfPoints() << std::endl;
+  std::cout << "v03-mesh, " << r2->GetOutput()->GetNumberOfCells() << ", "
+            << r2->GetOutput()->GetNumberOfPoints() << std::endl;
+  std::cout << "tev-mesh, " << r3->GetOutput()->GetNumberOfCells() << ", "
+            << r3->GetOutput()->GetNumberOfPoints() << std::endl;
+
+  std::cout << "io-contouring: " << std::chrono::duration<double>(t1 - t0).count() << std::endl
+            << "rendering: " << std::chrono::duration<double>(t3 - t1).count() << std::endl
+            << " - win2image: " << std::chrono::duration<double>(t2 - t1).count() << std::endl
+            << " - png: " << std::chrono::duration<double>(t3 - t2).count() << std::endl;
 }
 
 int main(int argc, char* argv[])
 {
   const char* pushdown_command_dest = "/fuse/command";
-  const char* pushdown_res_src = "/fuse/result";
-  const char* arr = "v03";
-  double value = 0.5;
+  const char* result_prefix = "/fuse/result";
   int c;
-  while ((c = getopt(argc, argv, "a:c:d:s:h")) != -1)
+  while ((c = getopt(argc, argv, "d:s:h")) != -1)
   {
     switch (c)
     {
-      case 'a':
-        arr = optarg;
-        break;
-      case 'c':
-        value = atof(optarg);
-        break;
       case 'd':
         pushdown_command_dest = optarg;
         break;
       case 's':
-        pushdown_res_src = optarg;
+        result_prefix = optarg;
         break;
       case 'h':
       default:
-        std::cerr << "Use -a to specify array name, -c to specify contour value, "
-                     "-d to specify pushdown command file, and -s to specify pushdown result file"
-                  << std::endl;
+        std::cerr
+          << "-d to specify pushdown command file, and -s to specify pushdown result file prefix"
+          << std::endl;
         exit(EXIT_FAILURE);
     }
   }
@@ -169,15 +201,16 @@ int main(int argc, char* argv[])
   argv += optind;
   if (!argc)
   {
-    std::cerr << "Lack target vti filename" << std::endl;
+    std::cerr << "Lack target vtk filename" << std::endl;
     exit(EXIT_FAILURE);
   }
+  std::string r0 = std::string(result_prefix) + "0";
+  std::string r1 = std::string(result_prefix) + "1";
+  std::string r2 = std::string(result_prefix) + "2";
   std::string outputPng = std::filesystem::path(argv[0]).stem().string() + ".png";
   std::cout << "pushdown analysis command file: " << pushdown_command_dest << std::endl;
-  std::cout << "pushdown result file: " << pushdown_res_src << std::endl;
+  std::cout << "pushdown result file: " << result_prefix << "[0-2]" << std::endl;
   std::cout << "vtk file: " << argv[0] << std::endl;
-  std::cout << "contour value: " << value << std::endl;
-  std::cout << "array: " << arr << std::endl;
-  Run(pushdown_command_dest, pushdown_res_src, argv[0], arr, value, outputPng.c_str());
+  Run(pushdown_command_dest, r0.c_str(), r1.c_str(), r2.c_str(), argv[0], outputPng.c_str());
   return 0;
 }
