@@ -35,6 +35,7 @@
 #include <vtkContourFilter.h>
 #include <vtkDataObject.h>
 #include <vtkNew.h>
+#include <vtkPointData.h>
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLUnstructuredGridReader.h>
 
@@ -47,7 +48,7 @@ int Run(
   vtkNew<vtkXMLUnstructuredGridReader> reader;
   reader->SetFileName(inputFile);
   reader->Update();
-
+  vtkNew<vtkPointData> empty;
   // v02
   {
     vtkNew<vtkContourFilter> cf1;
@@ -57,10 +58,15 @@ int Run(
     cf1->SetInputArrayToProcess(
       0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "v02");
     cf1->SetValue(0, 0.8);
+    cf1->Update();
+
+    cf1->GetOutput()->GetPointData()->ShallowCopy(empty);
 
     vtkNew<vtkXMLPolyDataWriter> w1;
     w1->SetFileName(outputFile1);
     w1->SetInputConnection(cf1->GetOutputPort());
+    w1->SetCompressorTypeToNone();
+    w1->EncodeAppendedDataOff();
     w1->Write();
   }
 
@@ -73,10 +79,15 @@ int Run(
     cf2->SetInputArrayToProcess(
       0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "v03");
     cf2->SetValue(0, 0.5);
+    cf2->Update();
+
+    cf2->GetOutput()->GetPointData()->ShallowCopy(empty);
 
     vtkNew<vtkXMLPolyDataWriter> w2;
     w2->SetFileName(outputFile2);
     w2->SetInputConnection(cf2->GetOutputPort());
+    w2->SetCompressorTypeToNone();
+    w2->EncodeAppendedDataOff();
     w2->Write();
   }
 
@@ -89,10 +100,15 @@ int Run(
     cf3->SetInputArrayToProcess(
       0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "tev");
     cf3->SetValue(0, 0.1);
+    cf3->Update();
+
+    cf3->GetOutput()->GetPointData()->ShallowCopy(empty);
 
     vtkNew<vtkXMLPolyDataWriter> w3;
     w3->SetFileName(outputFile3);
     w3->SetInputConnection(cf3->GetOutputPort());
+    w3->SetCompressorTypeToNone();
+    w3->EncodeAppendedDataOff();
     w3->Write();
   }
 
