@@ -38,6 +38,7 @@
 #include <vtkNew.h>
 #include <vtkOutlineFilter.h>
 #include <vtkPNGWriter.h>
+#include <vtkPointData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkRenderWindow.h>
@@ -59,11 +60,10 @@
 void Run0(vtkAlgorithm* input, const char* outputPng)
 {
   auto t0 = std::chrono::high_resolution_clock::now();
-
   // v02
   vtkNew<vtkContourFilter> cf1;
   cf1->SetInputConnection(input->GetOutputPort());
-  cf1->ComputeScalarsOff(); // No scalars or normals please
+  cf1->ComputeScalarsOff();
   cf1->ComputeNormalsOff();
   cf1->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "v02");
@@ -73,7 +73,7 @@ void Run0(vtkAlgorithm* input, const char* outputPng)
   // v03
   vtkNew<vtkContourFilter> cf2;
   cf2->SetInputConnection(input->GetOutputPort());
-  cf2->ComputeScalarsOff(); // No scalars or normals please
+  cf2->ComputeScalarsOff();
   cf2->ComputeNormalsOff();
   cf2->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "v03");
@@ -83,7 +83,7 @@ void Run0(vtkAlgorithm* input, const char* outputPng)
   // tev
   vtkNew<vtkContourFilter> cf3;
   cf3->SetInputConnection(input->GetOutputPort());
-  cf3->ComputeScalarsOff(); // No scalars or normals please
+  cf3->ComputeScalarsOff();
   cf3->ComputeNormalsOff();
   cf3->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "tev");
@@ -182,18 +182,22 @@ void Run0(vtkAlgorithm* input, const char* outputPng)
             << " - win2image: " << std::chrono::duration<double>(t2 - t1).count() << std::endl
             << " - png: " << std::chrono::duration<double>(t3 - t2).count() << std::endl;
 
+  vtkNew<vtkPointData> empty;
   vtkNew<vtkXMLPolyDataWriter> writer;
+  writer->SetCompressorTypeToNone();
+  writer->EncodeAppendedDataOff();
   writer->SetWriteToOutputString(true);
+  cf1->GetOutput()->GetPointData()->ShallowCopy(empty);
   writer->SetInputConnection(cf1->GetOutputPort());
   writer->Write();
   std::cout << "v02-size, " << writer->GetOutputString().size() << std::endl;
 
-  writer->SetWriteToOutputString(true);
+  cf2->GetOutput()->GetPointData()->ShallowCopy(empty);
   writer->SetInputConnection(cf2->GetOutputPort());
   writer->Write();
   std::cout << "v03-size, " << writer->GetOutputString().size() << std::endl;
 
-  writer->SetWriteToOutputString(true);
+  cf3->GetOutput()->GetPointData()->ShallowCopy(empty);
   writer->SetInputConnection(cf3->GetOutputPort());
   writer->Write();
   std::cout << "tev-size, " << writer->GetOutputString().size() << std::endl;
