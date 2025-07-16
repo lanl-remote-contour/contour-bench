@@ -30,37 +30,27 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# VTK requires CMake 3.12 in order to reliably be used.
-cmake_minimum_required(VERSION 3.12)
-project(contour-bench C CXX)
+add_executable(RewriteToVTI RewriteToVTI.cxx)
+target_link_libraries(RewriteToVTI PRIVATE ${VTK_LIBRARIES})
+vtk_module_autoinit(TARGETS RewriteToVTI
+        MODULES ${VTK_LIBRARIES})
 
-# Required for accessing std::filesystem
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+add_executable(RewriteToVTU RewriteToVTU.cxx)
+target_link_libraries(RewriteToVTU PRIVATE ${VTK_LIBRARIES})
+vtk_module_autoinit(TARGETS RewriteToVTU
+        MODULES ${VTK_LIBRARIES})
 
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-            "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
-endif ()
+add_executable(BaselineRunner BaselineRunner.cxx)
+target_link_libraries(BaselineRunner PRIVATE ${VTK_LIBRARIES})
+vtk_module_autoinit(TARGETS BaselineRunner
+        MODULES ${VTK_LIBRARIES})
 
-set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-find_package(Threads REQUIRED)
+add_executable(Offloader Offloader.cxx)
+target_link_libraries(Offloader PRIVATE ${VTK_LIBRARIES})
+vtk_module_autoinit(TARGETS Offloader
+        MODULES ${VTK_LIBRARIES})
 
-find_package(VTK COMPONENTS
-        CommonCore
-        CommonDataModel
-        FiltersCore
-        FiltersModeling
-        IOImage
-        IOXML
-        RenderingCore
-        RenderingOpenGL2
-)
-if (NOT VTK_FOUND)
-    message(FATAL_ERROR "Unable to locate VTK")
-endif ()
-
-add_subdirectory(asteroid)
-add_subdirectory(nyx)
+add_executable(OffloadRunner OffloadRunner.cxx)
+target_link_libraries(OffloadRunner PRIVATE ${VTK_LIBRARIES})
+vtk_module_autoinit(TARGETS OffloadRunner
+        MODULES ${VTK_LIBRARIES})
