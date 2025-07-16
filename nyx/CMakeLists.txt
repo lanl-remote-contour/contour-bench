@@ -34,3 +34,13 @@ add_executable(NyxBaselineRunner BaselineRunner.cxx)
 target_link_libraries(NyxBaselineRunner PRIVATE ${VTK_LIBRARIES})
 vtk_module_autoinit(TARGETS NyxBaselineRunner
         MODULES ${VTK_LIBRARIES})
+
+add_executable(NyxOffloader Offloader.cxx)
+target_link_libraries(NyxOffloader PRIVATE ${VTK_LIBRARIES})
+vtk_module_autoinit(TARGETS NyxOffloader
+        MODULES ${VTK_LIBRARIES})
+
+add_executable(NyxOffloadRunner OffloadRunner.cxx)
+target_link_libraries(NyxOffloadRunner PRIVATE ${VTK_LIBRARIES})
+vtk_module_autoinit(TARGETS NyxOffloadRunner
+        MODULES ${VTK_LIBRARIES})
