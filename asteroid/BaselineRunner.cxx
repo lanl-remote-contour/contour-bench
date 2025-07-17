@@ -57,38 +57,46 @@
 #include <string.h>
 #include <string>
 
-void Run0(vtkAlgorithm* input, const char* outputPng)
+void Run0(vtkAlgorithm* input, const char* outputPng, bool v02, bool v03, bool tev, bool debug,
+  bool lz4, bool gz)
 {
   auto t0 = std::chrono::high_resolution_clock::now();
-  // v02
+
   vtkNew<vtkContourFilter> cf1;
-  cf1->SetInputConnection(input->GetOutputPort());
-  cf1->ComputeScalarsOff();
-  cf1->ComputeNormalsOff();
-  cf1->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "v02");
-  cf1->SetValue(0, 0.8);
-  cf1->Update();
+  if (v02)
+  {
+    cf1->SetInputConnection(input->GetOutputPort());
+    cf1->ComputeScalarsOff();
+    cf1->ComputeNormalsOff();
+    cf1->SetInputArrayToProcess(
+      0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "v02");
+    cf1->SetValue(0, 0.8);
+    cf1->Update();
+  }
 
-  // v03
   vtkNew<vtkContourFilter> cf2;
-  cf2->SetInputConnection(input->GetOutputPort());
-  cf2->ComputeScalarsOff();
-  cf2->ComputeNormalsOff();
-  cf2->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "v03");
-  cf2->SetValue(0, 0.5);
-  cf2->Update();
+  if (v03)
+  {
+    cf2->SetInputConnection(input->GetOutputPort());
+    cf2->ComputeScalarsOff();
+    cf2->ComputeNormalsOff();
+    cf2->SetInputArrayToProcess(
+      0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "v03");
+    cf2->SetValue(0, 0.5);
+    cf2->Update();
+  }
 
-  // tev
   vtkNew<vtkContourFilter> cf3;
-  cf3->SetInputConnection(input->GetOutputPort());
-  cf3->ComputeScalarsOff();
-  cf3->ComputeNormalsOff();
-  cf3->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "tev");
-  cf3->SetValue(0, 0.1);
-  cf3->Update();
+  if (tev)
+  {
+    cf3->SetInputConnection(input->GetOutputPort());
+    cf3->ComputeScalarsOff();
+    cf3->ComputeNormalsOff();
+    cf3->SetInputArrayToProcess(
+      0, 0, 0, vtkDataObject::FieldAssociations::FIELD_ASSOCIATION_POINTS, "tev");
+    cf3->SetValue(0, 0.1);
+    cf3->Update();
+  }
 
   auto t1 = std::chrono::high_resolution_clock::now();
 
@@ -113,41 +121,47 @@ void Run0(vtkAlgorithm* input, const char* outputPng)
   ac0->GetProperty()->SetColor(1, 1, 1);
   renderer->AddActor(ac0);
 
-  // v02
-  vtkNew<vtkPolyDataMapper> mp1;
-  mp1->SetInputConnection(cf1->GetOutputPort());
-  mp1->ScalarVisibilityOff();
+  if (v02)
+  {
+    vtkNew<vtkPolyDataMapper> mp1;
+    mp1->SetInputConnection(cf1->GetOutputPort());
+    mp1->ScalarVisibilityOff();
 
-  vtkNew<vtkActor> ac1;
-  ac1->SetMapper(mp1);
-  ac1->GetProperty()->LightingOff();
-  ac1->GetProperty()->SetColor(0.012, 0.686, 1);
-  ac1->GetProperty()->SetOpacity(0.3);
-  renderer->AddActor(ac1);
+    vtkNew<vtkActor> ac1;
+    ac1->SetMapper(mp1);
+    ac1->GetProperty()->LightingOff();
+    ac1->GetProperty()->SetColor(0.012, 0.686, 1);
+    ac1->GetProperty()->SetOpacity(0.3);
+    renderer->AddActor(ac1);
+  }
 
-  // v03
-  vtkNew<vtkPolyDataMapper> mp2;
-  mp2->SetInputConnection(cf2->GetOutputPort());
-  mp2->ScalarVisibilityOff();
+  if (v03)
+  {
+    vtkNew<vtkPolyDataMapper> mp2;
+    mp2->SetInputConnection(cf2->GetOutputPort());
+    mp2->ScalarVisibilityOff();
 
-  vtkNew<vtkActor> ac2;
-  ac2->SetMapper(mp2);
-  ac2->GetProperty()->LightingOff();
-  ac2->GetProperty()->SetColor(1, 0.333, 0);
-  ac2->GetProperty()->SetOpacity(0.8);
-  renderer->AddActor(ac2);
+    vtkNew<vtkActor> ac2;
+    ac2->SetMapper(mp2);
+    ac2->GetProperty()->LightingOff();
+    ac2->GetProperty()->SetColor(1, 0.333, 0);
+    ac2->GetProperty()->SetOpacity(0.8);
+    renderer->AddActor(ac2);
+  }
 
-  // tev
-  vtkNew<vtkPolyDataMapper> mp3;
-  mp3->SetInputConnection(cf3->GetOutputPort());
-  mp3->ScalarVisibilityOff();
+  if (tev)
+  {
+    vtkNew<vtkPolyDataMapper> mp3;
+    mp3->SetInputConnection(cf3->GetOutputPort());
+    mp3->ScalarVisibilityOff();
 
-  vtkNew<vtkActor> ac3;
-  ac3->SetMapper(mp3);
-  ac3->GetProperty()->LightingOff();
-  ac3->GetProperty()->SetColor(0.816, 0.816, 0);
-  ac3->GetProperty()->SetOpacity(0.15);
-  renderer->AddActor(ac3);
+    vtkNew<vtkActor> ac3;
+    ac3->SetMapper(mp3);
+    ac3->GetProperty()->LightingOff();
+    ac3->GetProperty()->SetColor(0.816, 0.816, 0);
+    ac3->GetProperty()->SetOpacity(0.15);
+    renderer->AddActor(ac3);
+  }
 
   vtkNew<vtkRenderWindow> window;
   window->AddRenderer(renderer);
@@ -170,40 +184,63 @@ void Run0(vtkAlgorithm* input, const char* outputPng)
 
   auto t3 = std::chrono::high_resolution_clock::now();
 
-  std::cout << "v02-mesh, " << cf1->GetOutput()->GetNumberOfCells() << ", "
-            << cf1->GetOutput()->GetNumberOfPoints() << std::endl;
-  std::cout << "v03-mesh, " << cf2->GetOutput()->GetNumberOfCells() << ", "
-            << cf2->GetOutput()->GetNumberOfPoints() << std::endl;
-  std::cout << "tev-mesh, " << cf3->GetOutput()->GetNumberOfCells() << ", "
-            << cf3->GetOutput()->GetNumberOfPoints() << std::endl;
-
   std::cout << "contouring: " << std::chrono::duration<double>(t1 - t0).count() << std::endl
             << "rendering: " << std::chrono::duration<double>(t3 - t1).count() << std::endl
             << " - win2image: " << std::chrono::duration<double>(t2 - t1).count() << std::endl
             << " - png: " << std::chrono::duration<double>(t3 - t2).count() << std::endl;
 
+  if (!debug)
+  {
+    return;
+  }
+
   vtkNew<vtkPointData> empty;
   vtkNew<vtkXMLPolyDataWriter> writer;
-  writer->SetCompressorTypeToNone();
-  writer->EncodeAppendedDataOff();
   writer->SetWriteToOutputString(true);
-  cf1->GetOutput()->GetPointData()->ShallowCopy(empty);
-  writer->SetInputConnection(cf1->GetOutputPort());
-  writer->Write();
-  std::cout << "v02-size, " << writer->GetOutputString().size() << std::endl;
+  writer->EncodeAppendedDataOff();
+  writer->SetCompressorTypeToNone();
+  if (lz4)
+  {
+    writer->SetCompressorTypeToLZ4();
+  }
+  if (gz)
+  {
+    writer->SetCompressorTypeToZLib();
+  }
 
-  cf2->GetOutput()->GetPointData()->ShallowCopy(empty);
-  writer->SetInputConnection(cf2->GetOutputPort());
-  writer->Write();
-  std::cout << "v03-size, " << writer->GetOutputString().size() << std::endl;
+  if (v02)
+  {
+    std::cout << "v02-mesh: " << cf1->GetOutput()->GetNumberOfCells() << ", "
+              << cf1->GetOutput()->GetNumberOfPoints() << std::endl;
+    cf1->GetOutput()->GetPointData()->ShallowCopy(empty);
+    writer->SetInputConnection(cf1->GetOutputPort());
+    writer->Write();
+    std::cout << "v02-size: " << writer->GetOutputString().size() << std::endl;
+  }
 
-  cf3->GetOutput()->GetPointData()->ShallowCopy(empty);
-  writer->SetInputConnection(cf3->GetOutputPort());
-  writer->Write();
-  std::cout << "tev-size, " << writer->GetOutputString().size() << std::endl;
+  if (v03)
+  {
+    std::cout << "v03-mesh: " << cf2->GetOutput()->GetNumberOfCells() << ", "
+              << cf2->GetOutput()->GetNumberOfPoints() << std::endl;
+    cf2->GetOutput()->GetPointData()->ShallowCopy(empty);
+    writer->SetInputConnection(cf2->GetOutputPort());
+    writer->Write();
+    std::cout << "v03-size: " << writer->GetOutputString().size() << std::endl;
+  }
+
+  if (tev)
+  {
+    std::cout << "tev-mesh: " << cf3->GetOutput()->GetNumberOfCells() << ", "
+              << cf3->GetOutput()->GetNumberOfPoints() << std::endl;
+    cf3->GetOutput()->GetPointData()->ShallowCopy(empty);
+    writer->SetInputConnection(cf3->GetOutputPort());
+    writer->Write();
+    std::cout << "tev-size: " << writer->GetOutputString().size() << std::endl;
+  }
 }
 
-void Run(const char* inputVTK, const char* outputPng)
+void Run(const char* inputVTK, const char* outputPng, bool v02, bool v03, bool tev, bool debug,
+  bool lz4, bool gz)
 {
   char t = inputVTK[strlen(inputVTK) - 1];
   if (t == 'i')
@@ -218,7 +255,7 @@ void Run(const char* inputVTK, const char* outputPng)
 
     std::cout << "io: " << std::chrono::duration<double>(t1 - t0).count() << std::endl;
 
-    Run0(reader.Get(), outputPng);
+    Run0(reader.Get(), outputPng, v02, v03, tev, debug, lz4, gz);
   }
   else if (t == 'u')
   {
@@ -232,7 +269,7 @@ void Run(const char* inputVTK, const char* outputPng)
 
     std::cout << "io: " << std::chrono::duration<double>(t1 - t0).count() << std::endl;
 
-    Run0(reader.Get(), outputPng);
+    Run0(reader.Get(), outputPng, v02, v03, tev, debug, lz4, gz);
   }
   else
   {
@@ -243,14 +280,33 @@ void Run(const char* inputVTK, const char* outputPng)
 
 int main(int argc, char* argv[])
 {
+  bool v02 = false, v03 = false, tev = false, debug = false, lz4 = false, gz = false;
   int c;
-  while ((c = getopt(argc, argv, "h")) != -1)
+  while ((c = getopt(argc, argv, "23tdlgh")) != -1)
   {
     switch (c)
     {
+      case '2':
+        v02 = true;
+        break;
+      case '3':
+        v03 = true;
+        break;
+      case 't':
+        tev = true;
+        break;
+      case 'd': /* debug mesh structure and size */
+        debug = true;
+        break;
+      case 'l':
+        lz4 = true;
+        break;
+      case 'g':
+        gz = true;
+        break;
       case 'h':
       default:
-        std::cerr << "Usage: " << argv[0] << " <VTK filename>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " -23td <VTK filename>" << std::endl;
         exit(EXIT_FAILURE);
     }
   }
@@ -264,6 +320,12 @@ int main(int argc, char* argv[])
   std::string outputPng = std::filesystem::path(argv[0]).stem().string() + ".png";
   std::cout << "vtk file: " << argv[0] << std::endl;
   std::cout << "output png: " << outputPng << std::endl;
-  Run(argv[0], outputPng.c_str());
+  std::cout << "v02: " << v02 << std::endl;
+  std::cout << "v03: " << v03 << std::endl;
+  std::cout << "tev: " << tev << std::endl;
+  std::cout << "debug: " << debug << std::endl;
+  std::cout << "lz4: " << lz4 << std::endl;
+  std::cout << "gz: " << gz << std::endl;
+  Run(argv[0], outputPng.c_str(), v02, v03, tev, debug, lz4, gz);
   return 0;
 }
