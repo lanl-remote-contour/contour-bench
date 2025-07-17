@@ -34,6 +34,7 @@
 
 #include <vtkActor.h>
 #include <vtkContourFilter.h>
+#include <vtkDataArraySelection.h>
 #include <vtkImageData.h>
 #include <vtkNew.h>
 #include <vtkOutlineFilter.h>
@@ -57,15 +58,21 @@
 #include <string.h>
 #include <string>
 
-void Run0(vtkAlgorithm* input, const char* outputPng, bool v02, bool v03, bool tev, bool debug,
+void Run0(vtkXMLDataReader* reader, const char* outputPng, bool v02, bool v03, bool tev, bool debug,
   bool lz4, bool gz)
 {
+  vtkDataSet* const inputData = reader->GetOutputAsDataSet();
+  vtkNew<vtkPointData> inputPointData;
+  inputPointData->ShallowCopy(inputData->GetPointData());
   auto t0 = std::chrono::high_resolution_clock::now();
 
   vtkNew<vtkContourFilter> cf1;
   if (v02)
   {
-    cf1->SetInputConnection(input->GetOutputPort());
+    vtkNew<vtkPointData> pd;
+    pd->AddArray(inputPointData->GetAbstractArray("v02"));
+    inputData->GetPointData()->ShallowCopy(pd);
+    cf1->SetInputData(inputData);
     cf1->ComputeScalarsOff();
     cf1->ComputeNormalsOff();
     cf1->SetInputArrayToProcess(
@@ -77,7 +84,10 @@ void Run0(vtkAlgorithm* input, const char* outputPng, bool v02, bool v03, bool t
   vtkNew<vtkContourFilter> cf2;
   if (v03)
   {
-    cf2->SetInputConnection(input->GetOutputPort());
+    vtkNew<vtkPointData> pd;
+    pd->AddArray(inputPointData->GetAbstractArray("v03"));
+    inputData->GetPointData()->ShallowCopy(pd);
+    cf2->SetInputData(inputData);
     cf2->ComputeScalarsOff();
     cf2->ComputeNormalsOff();
     cf2->SetInputArrayToProcess(
@@ -89,7 +99,10 @@ void Run0(vtkAlgorithm* input, const char* outputPng, bool v02, bool v03, bool t
   vtkNew<vtkContourFilter> cf3;
   if (tev)
   {
-    cf3->SetInputConnection(input->GetOutputPort());
+    vtkNew<vtkPointData> pd;
+    pd->AddArray(inputPointData->GetAbstractArray("tev"));
+    inputData->GetPointData()->ShallowCopy(pd);
+    cf3->SetInputData(inputData);
     cf3->ComputeScalarsOff();
     cf3->ComputeNormalsOff();
     cf3->SetInputArrayToProcess(
@@ -239,6 +252,22 @@ void Run0(vtkAlgorithm* input, const char* outputPng, bool v02, bool v03, bool t
   }
 }
 
+void EnableArrays(vtkDataArraySelection* selection, bool v02, bool v03, bool tev)
+{
+  if (v02)
+  {
+    selection->EnableArray("v02");
+  }
+  if (v03)
+  {
+    selection->EnableArray("v03");
+  }
+  if (tev)
+  {
+    selection->EnableArray("tev");
+  }
+}
+
 void Run(const char* inputVTK, const char* outputPng, bool v02, bool v03, bool tev, bool debug,
   bool lz4, bool gz)
 {
@@ -249,6 +278,9 @@ void Run(const char* inputVTK, const char* outputPng, bool v02, bool v03, bool t
 
     vtkNew<vtkXMLImageDataReader> reader;
     reader->SetFileName(inputVTK);
+    reader->UpdateInformation();
+    reader->GetPointDataArraySelection()->DisableAllArrays();
+    EnableArrays(reader->GetPointDataArraySelection(), v02, v03, tev);
     reader->Update();
 
     auto t1 = std::chrono::high_resolution_clock::now();
@@ -263,6 +295,9 @@ void Run(const char* inputVTK, const char* outputPng, bool v02, bool v03, bool t
 
     vtkNew<vtkXMLUnstructuredGridReader> reader;
     reader->SetFileName(inputVTK);
+    reader->UpdateInformation();
+    reader->GetPointDataArraySelection()->DisableAllArrays();
+    EnableArrays(reader->GetPointDataArraySelection(), v02, v03, tev);
     reader->Update();
 
     auto t1 = std::chrono::high_resolution_clock::now();
