@@ -207,7 +207,6 @@ void Run0(vtkXMLDataReader* reader, const char* outputPng, bool v02, bool v03, b
     return;
   }
 
-  vtkNew<vtkPointData> empty;
   vtkNew<vtkXMLPolyDataWriter> writer;
   writer->SetWriteToOutputString(true);
   writer->EncodeAppendedDataOff();
@@ -225,7 +224,6 @@ void Run0(vtkXMLDataReader* reader, const char* outputPng, bool v02, bool v03, b
   {
     std::cout << "v02-mesh: " << cf1->GetOutput()->GetNumberOfCells() << ", "
               << cf1->GetOutput()->GetNumberOfPoints() << std::endl;
-    cf1->GetOutput()->GetPointData()->ShallowCopy(empty);
     writer->SetInputConnection(cf1->GetOutputPort());
     writer->Write();
     std::cout << "v02-size: " << writer->GetOutputString().size() << std::endl;
@@ -235,7 +233,6 @@ void Run0(vtkXMLDataReader* reader, const char* outputPng, bool v02, bool v03, b
   {
     std::cout << "v03-mesh: " << cf2->GetOutput()->GetNumberOfCells() << ", "
               << cf2->GetOutput()->GetNumberOfPoints() << std::endl;
-    cf2->GetOutput()->GetPointData()->ShallowCopy(empty);
     writer->SetInputConnection(cf2->GetOutputPort());
     writer->Write();
     std::cout << "v03-size: " << writer->GetOutputString().size() << std::endl;
@@ -245,7 +242,6 @@ void Run0(vtkXMLDataReader* reader, const char* outputPng, bool v02, bool v03, b
   {
     std::cout << "tev-mesh: " << cf3->GetOutput()->GetNumberOfCells() << ", "
               << cf3->GetOutput()->GetNumberOfPoints() << std::endl;
-    cf3->GetOutput()->GetPointData()->ShallowCopy(empty);
     writer->SetInputConnection(cf3->GetOutputPort());
     writer->Write();
     std::cout << "tev-size: " << writer->GetOutputString().size() << std::endl;
