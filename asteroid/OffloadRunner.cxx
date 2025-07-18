@@ -53,14 +53,15 @@
 #include <string>
 
 void Run(const char* pushdown_command_dest, const char* result1, const char* result2,
-  const char* result3, const char* inputVtk, const char* outputPng)
+  const char* result3, const char* inputVtk, const char* outputPng, bool v02, bool v03, bool tev,
+  int compression)
 {
   auto t0 = std::chrono::high_resolution_clock::now();
 
   {
     std::ofstream cmd;
     cmd.open(pushdown_command_dest, std::ios::out | std::ios::binary | std::ios::trunc);
-    cmd << inputVtk << std::endl;
+    cmd << inputVtk << v02 << v03 << tev << compression << std::endl;
     cmd.close();
     if (!cmd.good())
     {
@@ -70,16 +71,25 @@ void Run(const char* pushdown_command_dest, const char* result1, const char* res
   }
 
   vtkNew<vtkXMLPolyDataReader> r1;
-  r1->SetFileName(result1);
-  r1->Update();
+  if (v02)
+  {
+    r1->SetFileName(result1);
+    r1->Update();
+  }
 
   vtkNew<vtkXMLPolyDataReader> r2;
-  r2->SetFileName(result2);
-  r2->Update();
+  if (v03)
+  {
+    r2->SetFileName(result2);
+    r2->Update();
+  }
 
   vtkNew<vtkXMLPolyDataReader> r3;
-  r3->SetFileName(result3);
-  r3->Update();
+  if (tev)
+  {
+    r3->SetFileName(result3);
+    r3->Update();
+  }
 
   auto t1 = std::chrono::high_resolution_clock::now();
 
@@ -104,41 +114,47 @@ void Run(const char* pushdown_command_dest, const char* result1, const char* res
   ac0->GetProperty()->SetColor(1, 1, 1);
   renderer->AddActor(ac0);
 
-  // v02
-  vtkNew<vtkPolyDataMapper> mp1;
-  mp1->SetInputConnection(r1->GetOutputPort());
-  mp1->ScalarVisibilityOff();
+  if (v02)
+  {
+    vtkNew<vtkPolyDataMapper> mp1;
+    mp1->SetInputConnection(r1->GetOutputPort());
+    mp1->ScalarVisibilityOff();
 
-  vtkNew<vtkActor> ac1;
-  ac1->SetMapper(mp1);
-  ac1->GetProperty()->LightingOff();
-  ac1->GetProperty()->SetColor(0.012, 0.686, 1);
-  ac1->GetProperty()->SetOpacity(0.3);
-  renderer->AddActor(ac1);
+    vtkNew<vtkActor> ac1;
+    ac1->SetMapper(mp1);
+    ac1->GetProperty()->LightingOff();
+    ac1->GetProperty()->SetColor(0.012, 0.686, 1);
+    ac1->GetProperty()->SetOpacity(0.3);
+    renderer->AddActor(ac1);
+  }
 
-  // v03
-  vtkNew<vtkPolyDataMapper> mp2;
-  mp2->SetInputConnection(r2->GetOutputPort());
-  mp2->ScalarVisibilityOff();
+  if (v03)
+  {
+    vtkNew<vtkPolyDataMapper> mp2;
+    mp2->SetInputConnection(r2->GetOutputPort());
+    mp2->ScalarVisibilityOff();
 
-  vtkNew<vtkActor> ac2;
-  ac2->SetMapper(mp2);
-  ac2->GetProperty()->LightingOff();
-  ac2->GetProperty()->SetColor(1, 0.333, 0);
-  ac2->GetProperty()->SetOpacity(0.8);
-  renderer->AddActor(ac2);
+    vtkNew<vtkActor> ac2;
+    ac2->SetMapper(mp2);
+    ac2->GetProperty()->LightingOff();
+    ac2->GetProperty()->SetColor(1, 0.333, 0);
+    ac2->GetProperty()->SetOpacity(0.8);
+    renderer->AddActor(ac2);
+  }
 
-  // tev
-  vtkNew<vtkPolyDataMapper> mp3;
-  mp3->SetInputConnection(r3->GetOutputPort());
-  mp3->ScalarVisibilityOff();
+  if (tev)
+  {
+    vtkNew<vtkPolyDataMapper> mp3;
+    mp3->SetInputConnection(r3->GetOutputPort());
+    mp3->ScalarVisibilityOff();
 
-  vtkNew<vtkActor> ac3;
-  ac3->SetMapper(mp3);
-  ac3->GetProperty()->LightingOff();
-  ac3->GetProperty()->SetColor(0.816, 0.816, 0);
-  ac3->GetProperty()->SetOpacity(0.15);
-  renderer->AddActor(ac3);
+    vtkNew<vtkActor> ac3;
+    ac3->SetMapper(mp3);
+    ac3->GetProperty()->LightingOff();
+    ac3->GetProperty()->SetColor(0.816, 0.816, 0);
+    ac3->GetProperty()->SetOpacity(0.15);
+    renderer->AddActor(ac3);
+  }
 
   vtkNew<vtkRenderWindow> window;
   window->AddRenderer(renderer);
@@ -161,25 +177,36 @@ void Run(const char* pushdown_command_dest, const char* result1, const char* res
 
   auto t3 = std::chrono::high_resolution_clock::now();
 
-  std::cout << "v02-mesh, " << r1->GetOutput()->GetNumberOfCells() << ", "
-            << r1->GetOutput()->GetNumberOfPoints() << std::endl;
-  std::cout << "v03-mesh, " << r2->GetOutput()->GetNumberOfCells() << ", "
-            << r2->GetOutput()->GetNumberOfPoints() << std::endl;
-  std::cout << "tev-mesh, " << r3->GetOutput()->GetNumberOfCells() << ", "
-            << r3->GetOutput()->GetNumberOfPoints() << std::endl;
-
   std::cout << "io-contouring: " << std::chrono::duration<double>(t1 - t0).count() << std::endl
             << "rendering: " << std::chrono::duration<double>(t3 - t1).count() << std::endl
             << " - win2image: " << std::chrono::duration<double>(t2 - t1).count() << std::endl
             << " - png: " << std::chrono::duration<double>(t3 - t2).count() << std::endl;
+
+  if (v02)
+  {
+    std::cout << "v02-mesh: " << r1->GetOutput()->GetNumberOfCells() << ", "
+              << r1->GetOutput()->GetNumberOfPoints() << std::endl;
+  }
+  if (v03)
+  {
+    std::cout << "v03-mesh: " << r2->GetOutput()->GetNumberOfCells() << ", "
+              << r2->GetOutput()->GetNumberOfPoints() << std::endl;
+  }
+  if (tev)
+  {
+    std::cout << "tev-mesh: " << r3->GetOutput()->GetNumberOfCells() << ", "
+              << r3->GetOutput()->GetNumberOfPoints() << std::endl;
+  }
 }
 
 int main(int argc, char* argv[])
 {
   const char* pushdown_command_dest = "/fuse/command";
   const char* result_prefix = "/fuse/result";
+  bool v02 = false, v03 = false, tev = false;
+  int compression = 0;
   int c;
-  while ((c = getopt(argc, argv, "d:s:h")) != -1)
+  while ((c = getopt(argc, argv, "d:s:23tlgh")) != -1)
   {
     switch (c)
     {
@@ -189,9 +216,25 @@ int main(int argc, char* argv[])
       case 's':
         result_prefix = optarg;
         break;
+      case '2':
+        v02 = true;
+        break;
+      case '3':
+        v03 = true;
+        break;
+      case 't':
+        tev = true;
+        break;
+      case 'l':
+        compression = 2;
+        break;
+      case 'g':
+        compression = 1;
+        break;
       case 'h':
       default:
         std::cerr
+          << "Use -23t to specify column combinations, -l or -g to specify compression, "
           << "-d to specify pushdown command file, and -s to specify pushdown result file prefix"
           << std::endl;
         exit(EXIT_FAILURE);
@@ -211,6 +254,11 @@ int main(int argc, char* argv[])
   std::cout << "pushdown analysis command file: " << pushdown_command_dest << std::endl;
   std::cout << "pushdown result file: " << result_prefix << "[0-2]" << std::endl;
   std::cout << "vtk file: " << argv[0] << std::endl;
-  Run(pushdown_command_dest, r0.c_str(), r1.c_str(), r2.c_str(), argv[0], outputPng.c_str());
+  std::cout << "v02: " << v02 << std::endl;
+  std::cout << "v03: " << v03 << std::endl;
+  std::cout << "tev: " << tev << std::endl;
+  std::cout << "compression (0=none, 1=gz, 2=lz4): " << compression << std::endl;
+  Run(pushdown_command_dest, r0.c_str(), r1.c_str(), r2.c_str(), argv[0], outputPng.c_str(), v02,
+    v03, tev, compression);
   return 0;
 }

@@ -33,26 +33,70 @@
  */
 
 #include <vtkContourFilter.h>
+#include <vtkDataArraySelection.h>
 #include <vtkDataObject.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLUnstructuredGridReader.h>
 
 #include <fstream>
 #include <stdlib.h>
 
-int Run(
-  const char* inputFile, const char* outputFile1, const char* outputFile2, const char* outputFile3)
+void SetCompression(vtkXMLWriter* writer, int compression)
+{
+  if (compression == 1)
+  {
+    writer->SetCompressorTypeToZLib();
+  }
+  else if (compression == 2)
+  {
+    writer->SetCompressorTypeToLZ4();
+  }
+  else
+  {
+    writer->SetCompressorTypeToNone();
+  }
+}
+
+void EnableArrays(vtkDataArraySelection* selection, bool v02, bool v03, bool tev)
+{
+  if (v02)
+  {
+    selection->EnableArray("v02");
+  }
+  if (v03)
+  {
+    selection->EnableArray("v03");
+  }
+  if (tev)
+  {
+    selection->EnableArray("tev");
+  }
+}
+
+int Run(const char* inputFile, const char* outputFile1, const char* outputFile2,
+  const char* outputFile3, bool v02, bool v03, bool tev, int compression)
 {
   vtkNew<vtkXMLUnstructuredGridReader> reader;
   reader->SetFileName(inputFile);
+  reader->UpdateInformation();
+  reader->GetPointDataArraySelection()->DisableAllArrays();
+  EnableArrays(reader->GetPointDataArraySelection(), v02, v03, tev);
   reader->Update();
-  vtkNew<vtkPointData> empty;
-  // v02
+
+  vtkDataSet* const inputData = reader->GetOutput();
+  vtkNew<vtkPointData> inputPointData;
+  inputPointData->ShallowCopy(inputData->GetPointData());
+
+  if (v02)
   {
+    vtkNew<vtkPointData> pd;
+    pd->AddArray(inputPointData->GetAbstractArray("v02"));
+    inputData->GetPointData()->ShallowCopy(pd);
     vtkNew<vtkContourFilter> cf1;
-    cf1->SetInputConnection(reader->GetOutputPort());
+    cf1->SetInputData(inputData);
     cf1->ComputeScalarsOff();
     cf1->ComputeNormalsOff();
     cf1->SetInputArrayToProcess(
@@ -60,20 +104,21 @@ int Run(
     cf1->SetValue(0, 0.8);
     cf1->Update();
 
-    cf1->GetOutput()->GetPointData()->ShallowCopy(empty);
-
     vtkNew<vtkXMLPolyDataWriter> w1;
     w1->SetFileName(outputFile1);
     w1->SetInputConnection(cf1->GetOutputPort());
-    w1->SetCompressorTypeToNone();
+    SetCompression(w1, compression);
     w1->EncodeAppendedDataOff();
     w1->Write();
   }
 
-  // v03
+  if (v03)
   {
+    vtkNew<vtkPointData> pd;
+    pd->AddArray(inputPointData->GetAbstractArray("v03"));
+    inputData->GetPointData()->ShallowCopy(pd);
     vtkNew<vtkContourFilter> cf2;
-    cf2->SetInputConnection(reader->GetOutputPort());
+    cf2->SetInputData(inputData);
     cf2->ComputeScalarsOff();
     cf2->ComputeNormalsOff();
     cf2->SetInputArrayToProcess(
@@ -81,20 +126,21 @@ int Run(
     cf2->SetValue(0, 0.5);
     cf2->Update();
 
-    cf2->GetOutput()->GetPointData()->ShallowCopy(empty);
-
     vtkNew<vtkXMLPolyDataWriter> w2;
     w2->SetFileName(outputFile2);
     w2->SetInputConnection(cf2->GetOutputPort());
-    w2->SetCompressorTypeToNone();
+    SetCompression(w2, compression);
     w2->EncodeAppendedDataOff();
     w2->Write();
   }
 
-  // tev
+  if (tev)
   {
+    vtkNew<vtkPointData> pd;
+    pd->AddArray(inputPointData->GetAbstractArray("tev"));
+    inputData->GetPointData()->ShallowCopy(pd);
     vtkNew<vtkContourFilter> cf3;
-    cf3->SetInputConnection(reader->GetOutputPort());
+    cf3->SetInputData(inputData);
     cf3->ComputeScalarsOff();
     cf3->ComputeNormalsOff();
     cf3->SetInputArrayToProcess(
@@ -102,12 +148,10 @@ int Run(
     cf3->SetValue(0, 0.1);
     cf3->Update();
 
-    cf3->GetOutput()->GetPointData()->ShallowCopy(empty);
-
     vtkNew<vtkXMLPolyDataWriter> w3;
     w3->SetFileName(outputFile3);
     w3->SetInputConnection(cf3->GetOutputPort());
-    w3->SetCompressorTypeToNone();
+    SetCompression(w3, compression);
     w3->EncodeAppendedDataOff();
     w3->Write();
   }
@@ -127,10 +171,13 @@ int main(int argc, char* argv[])
   }
   std::ifstream input(argv[1] /* command file */);
   std::string fileName;
-  input >> fileName;
+  bool v02, v03, tev;
+  int compression;
+  input >> fileName >> v02 >> v03 >> tev >> compression;
   if (!input.good())
   {
     exit(EXIT_FAILURE);
   }
-  return Run(fileName.c_str(), argv[2], argv[3], argv[4] /* result files */);
+  return Run(
+    fileName.c_str(), argv[2], argv[3], argv[4] /* result files */, v02, v03, tev, compression);
 }
