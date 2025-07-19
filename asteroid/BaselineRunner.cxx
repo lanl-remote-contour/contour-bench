@@ -134,13 +134,12 @@ void Run0(vtkXMLDataReader* reader, const char* outputPng, bool v02, bool v03, b
   ac0->GetProperty()->SetColor(1, 1, 1);
   renderer->AddActor(ac0);
 
+  vtkNew<vtkPolyDataMapper> mp1;
+  vtkNew<vtkActor> ac1;
   if (v02)
   {
-    vtkNew<vtkPolyDataMapper> mp1;
-    mp1->SetInputConnection(cf1->GetOutputPort());
+    mp1->SetInputData(cf1->GetOutput());
     mp1->ScalarVisibilityOff();
-
-    vtkNew<vtkActor> ac1;
     ac1->SetMapper(mp1);
     ac1->GetProperty()->LightingOff();
     ac1->GetProperty()->SetColor(0.012, 0.686, 1);
@@ -148,13 +147,12 @@ void Run0(vtkXMLDataReader* reader, const char* outputPng, bool v02, bool v03, b
     renderer->AddActor(ac1);
   }
 
+  vtkNew<vtkPolyDataMapper> mp2;
+  vtkNew<vtkActor> ac2;
   if (v03)
   {
-    vtkNew<vtkPolyDataMapper> mp2;
-    mp2->SetInputConnection(cf2->GetOutputPort());
+    mp2->SetInputData(cf2->GetOutput());
     mp2->ScalarVisibilityOff();
-
-    vtkNew<vtkActor> ac2;
     ac2->SetMapper(mp2);
     ac2->GetProperty()->LightingOff();
     ac2->GetProperty()->SetColor(1, 0.333, 0);
@@ -162,13 +160,12 @@ void Run0(vtkXMLDataReader* reader, const char* outputPng, bool v02, bool v03, b
     renderer->AddActor(ac2);
   }
 
+  vtkNew<vtkPolyDataMapper> mp3;
+  vtkNew<vtkActor> ac3;
   if (tev)
   {
-    vtkNew<vtkPolyDataMapper> mp3;
-    mp3->SetInputConnection(cf3->GetOutputPort());
+    mp3->SetInputData(cf3->GetOutput());
     mp3->ScalarVisibilityOff();
-
-    vtkNew<vtkActor> ac3;
     ac3->SetMapper(mp3);
     ac3->GetProperty()->LightingOff();
     ac3->GetProperty()->SetColor(0.816, 0.816, 0);
